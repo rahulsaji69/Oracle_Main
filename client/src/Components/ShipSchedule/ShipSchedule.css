@@ -1,0 +1,177 @@
+.ship-schedule {
+  padding: 20px;
+  background-color: #f5f5f5;
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+}
+
+.page-title {
+  margin-bottom: 20px;
+  color: #2c3e50;
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.add-schedule-btn {
+  margin-bottom: 20px;
+}
+
+.schedule-container {
+  display: flex;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.ship-list {
+  width: 30%;
+  border-right: 1px solid #e0e0e0;
+  max-height: 600px;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.ship-details {
+  flex-grow: 1;
+  padding: 30px;
+}
+
+.MuiListItem-root.Mui-selected {
+  background-color: #fcdc4c !important;
+}
+
+.MuiListItem-root:hover {
+  background-color: #fff9c4;
+}
+
+.MuiStepper-root {
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+.MuiStepLabel-label {
+  font-weight: 500;
+}
+
+/* Improved Button Styles */
+.MuiButton-containedPrimary {
+  background-color: #fcdc4c !important;
+  color: #2c3e50 !important;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 25px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+}
+
+.MuiButton-containedPrimary:hover {
+  background-color: #ffd54f !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Dialog styles */
+.MuiDialog-paper {
+  border-radius: 12px !important;
+  padding: 20px;
+}
+
+.MuiDialogTitle-root {
+  background-color: #fcdc4c;
+  color: #2c3e50;
+  font-weight: 700;
+  padding: 20px 24px;
+}
+
+.MuiDialogContent-root {
+  padding: 24px !important;
+}
+
+.MuiDialogActions-root {
+  padding: 16px 24px;
+}
+
+/* Form field styles */
+.MuiTextField-root {
+  margin-bottom: 20px !important;
+}
+
+.MuiInputLabel-root {
+  color: #2c3e50 !important;
+  font-weight: 500;
+}
+
+.MuiOutlinedInput-root {
+  border-radius: 8px;
+}
+
+.MuiOutlinedInput-notchedOutline {
+  border-color: #fcdc4c !important;
+}
+
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #ffd54f !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #2c3e50 !important;
+}
+
+/* ... existing styles ... */
+
+.custom-stepper {
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+.MuiStepLabel-label {
+  font-weight: 500;
+  color: #2c3e50 !important;
+}
+
+.custom-step-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.custom-step-icon.active {
+  background-color: #fcdc4c;
+  color: #2c3e50;
+}
+
+.custom-step-icon.completed {
+  background-color: #4caf50;
+}
+
+.MuiStepConnector-line {
+  min-height: 40px !important;
+}
+
+/* Adjust the spacing between steps */
+.MuiStep-root {
+  margin-bottom: 16px !important;
+}
+
+/* Make the stepper line thicker */
+.MuiStepConnector-line {
+  border-left-width: 2px !important;
+}
+
+/* Highlight the current location step */
+.MuiStepLabel-root[data-current="true"] .MuiStepLabel-label {
+  font-weight: 700;
+  color: #fcdc4c !important;
+}
+
+.MuiStepLabel-root[data-current="true"] .custom-step-icon {
+  background-color: #fcdc4c;
+  color: #2c3e50;
+  box-shadow: 0 0 0 3px rgba(252, 220, 76, 0.3);
+}

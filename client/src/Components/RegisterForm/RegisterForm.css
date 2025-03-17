@@ -1,0 +1,91 @@
+/* Make sure the body and HTML allow scrolling */
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    overflow-y: auto; /* Allows vertical scrolling */
+}
+
+.background {
+    background-image: url('/src/Assets/ii.jpg'); /* Replace with your actual image path */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed; /* Keeps the background fixed */
+    min-height: 100vh; /* Takes up at least the full viewport height */
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 80px; /* Push content below navbar */
+    padding-bottom: 40px; /* Add padding at the bottom of the page */
+}
+
+.form-container {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 500px; /* Reduced width to fit better on smaller screens */
+   
+}
+
+.form-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding-bottom: 40px; /* Add padding at the bottom */
+}
+
+h2 {
+    margin-bottom: 20px;
+    font-size: 24px; /* Slightly reduce the heading size */
+}
+
+input[type="text"], input[type="email"], input[type="password"], select {
+    width: calc(100% - 16px); /* Reduced the width slightly */
+    padding: 8px; /* Reduced padding for smaller fields */
+    
+    
+    border-radius: 4px;
+    font-size: 14px; /* Reduce the font size in inputs */
+}
+
+.register1 {
+    width: 100%;
+    padding: 10px;
+    background-color: #fcdc4c !important;
+    border: 1px solid #a88734 !important;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    margin-top: 20px;
+}
+
+.register1:hover {
+    background-color: #ddb347;
+    color: black;
+}
+
+select {
+    display: block;
+}
+
+label {
+    font-size: 14px;
+}
+
+label a {
+    color: #f1cb0c;
+    text-decoration: none;
+}
+
+label a:hover {
+    text-decoration: underline;
+}
+
+/* Ensure the page itself can scroll if the content overflows */
+html, body {
+    overflow-y: auto;
+    min-height: 100%;
+}

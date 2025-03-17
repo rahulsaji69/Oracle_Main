@@ -1,0 +1,268 @@
+.srep-dashboard {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.srep-title {
+  color: #1a237e;
+  margin-bottom: 2rem;
+  font-size: 2.2rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.srep-section-title {
+  color: #283593;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+}
+
+.srep-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  background-color: white;
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.srep-tab {
+  padding: 12px 24px;
+  border: 2px solid #3f51b5;
+  background-color: white;
+  color: #3f51b5;
+  cursor: pointer;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  min-width: 160px;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+
+.srep-tab:hover {
+  background-color: #3f51b5;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.srep-tab-active {
+  padding: 12px 24px;
+  border: 2px solid #3f51b5;
+  background-color: #3f51b5;
+  color: white;
+  cursor: pointer;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  min-width: 160px;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 8px rgba(63, 81, 181, 0.2);
+}
+
+.srep-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.srep-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 1.5rem;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.srep-th, .srep-td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.srep-th {
+  background-color: #3f51b5;
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+
+.srep-tr:hover {
+  background-color: #f5f5f5;
+}
+
+.srep-input {
+  padding: 8px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: border-color 0.3s ease;
+  width: 100%;
+  max-width: 200px;
+}
+
+.srep-input:focus {
+  border-color: #3f51b5;
+  outline: none;
+}
+
+.srep-input[type="date"] {
+  padding: 7px 12px;
+}
+
+.srep-btn {
+  padding: 8px 16px;
+  margin: 0 5px;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.srep-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* Document section styling */
+.srep-document-tools {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.srep-document-upload, .srep-document-templates {
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.srep-document-upload h3, .srep-document-templates h3 {
+  color: #283593;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.srep-document-templates ul {
+  list-style: none;
+  padding: 0;
+}
+
+.srep-document-templates li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.srep-document-templates li:last-child {
+  border-bottom: none;
+}
+
+.srep-document-upload input[type="file"] {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 2px dashed #3f51b5;
+  border-radius: 8px;
+  width: 100%;
+  cursor: pointer;
+}
+
+/* Status badges for bookings */
+.srep-status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.srep-status-pending {
+  background-color: #fff3e0;
+  color: #e65100;
+}
+
+.srep-status-confirmed {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.srep-status-rejected {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+/* Action buttons */
+.srep-action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.srep-btn-confirm {
+  background-color: #4caf50;
+}
+
+.srep-btn-reject {
+  background-color: #f44336;
+}
+
+.srep-btn-update {
+  background-color: #3f51b5;
+}
+
+.srep-btn-confirm:hover {
+  background-color: #388e3c;
+}
+
+.srep-btn-reject:hover {
+  background-color: #d32f2f;
+}
+
+.srep-btn-update:hover {
+  background-color: #283593;
+}
+
+/* Loading state */
+.srep-loading {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: #3f51b5;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .srep-dashboard {
+    padding: 1rem;
+  }
+
+  .srep-document-tools {
+    grid-template-columns: 1fr;
+  }
+
+  .srep-tab {
+    min-width: 140px;
+    padding: 10px 16px;
+  }
+
+  .srep-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+} 

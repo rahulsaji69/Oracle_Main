@@ -1,0 +1,163 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Poppins', sans-serif;
+    background-color: #f5f7fa;
+  }
+  
+  .admin-page {
+    display: flex;
+    height: 100vh;
+  }
+  
+  .app-bar {
+    transition: all 225ms cubic-bezier(0.0, 0, 0.2, 1) 0ms;
+    z-index: 1300; /* Increased z-index to be above the drawer */
+    background-color: #fcdc4c !important;
+    box-shadow: 0 2px 10px rgba(252, 220, 76, 0.3);
+  }
+  
+  .app-bar-shift {
+    width: calc(100% - 240px);
+    margin-left: 240px;
+  }
+  
+  .menu-button {
+    margin-right: 36px;
+    color: #2c3e50 !important;
+    transition: transform 0.3s ease;
+  }
+  
+  .menu-button:hover {
+    transform: rotate(90deg);
+  }
+  
+  .hide {
+    display: none;
+  }
+  
+  .drawer-paper {
+    width: 240px;
+    position: fixed;
+    height: calc(100% - 64px); /* Subtract AppBar height */
+    top: 64px !important; /* Start below the AppBar */
+    left: 0;
+    background-color: #fff;
+    border-right: 1px solid #fcdc4c;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(-100%);
+    z-index: 1200; /* Below the AppBar */
+    padding-top: 20px; /* Add some top padding to push content down */
+  }
+  
+  .drawer-open {
+    transform: translateX(0);
+  }
+  
+  .drawer-spacer {
+    height: 0px; /* AppBar height (64px) + extra space (20px) */
+  }
+  
+  .content {
+    flex-grow: 1;
+    padding: 24px;
+    padding-top: 88px; /* AppBar height (64px) + extra padding (24px) */
+    transition: margin 225ms cubic-bezier(0.0, 0, 0.2, 1) 0ms;
+    overflow-y: auto;
+    background-color: #f9f9f9;
+    min-height: calc(100vh - 64px);
+
+  }
+  
+  .content-shift {
+    margin-left: 240px;
+  }
+  
+  .toolbar {
+    min-height: 64px;
+  }
+  
+  .content-container {
+    display: flex;
+    flex-grow: 1;
+    background-color: #f9f9f9;
+    margin-top: 64px;
+    overflow: hidden;
+  }
+  
+  @media (max-width: 600px) {
+    .app-bar-shift {
+      width: 100%;
+      margin-left: 0;
+    }
+  
+    .content-shift {
+      margin-left: 0;
+    }
+  
+    .drawer-paper {
+      width: 100%;
+      height: calc(100% - 56px); /* Adjust for smaller AppBar on mobile */
+      top: 56px; /* Adjust for smaller AppBar on mobile */
+      padding-top: 16px; /* Slightly less padding on mobile */
+    }
+  
+    .drawer-spacer {
+      height: 76px; /* Smaller AppBar height (56px) + extra space (20px) */
+    }
+  
+    .content {
+      padding-top: 80px; /* Smaller AppBar height (56px) + extra padding (24px) */
+    }
+  
+    .content-container {
+      margin-top: 56px;
+    }
+  }
+  
+  /* Enhanced styles for Material-UI components */
+  .MuiListItem-root {
+    color: #2c3e50;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    border-radius: 8px;
+    margin: 4px 8px;
+  }
+  
+  .MuiListItem-root:hover {
+    background-color: rgba(252, 220, 76, 0.2);
+    color: #2c3e50;
+  }
+  
+  .MuiListItemIcon-root {
+    color: #2c3e50;
+    transition: color 0.3s ease;
+  }
+  
+  .MuiListItem-root:hover .MuiListItemIcon-root {
+    color: #2c3e50;
+  }
+  
+  .MuiTypography-root {
+    color: #2c3e50 !important;
+    font-weight: 600;
+  }
+  
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background:#fcdc4c;
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #ddb347;
+  }

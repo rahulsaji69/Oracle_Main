@@ -1,0 +1,133 @@
+.footer {
+    background-color: #f8f9fa;
+    padding: 40px 0 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  .footer-top {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    padding: 0 20px;
+  }
+  
+  .footer-section h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .location-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .country-select,
+  .office-select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    font-size: 14px;
+  }
+  
+  .country-select {
+    width: 80px;
+  }
+  
+  .office-select {
+    flex-grow: 1;
+  }
+  
+  .contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .contact-info a {
+    color: #666;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  
+  .contact-info a:hover {
+    color: #0066cc;
+  }
+  
+  .office-details-btn {
+    background: none;
+    border: none;
+    color: #666;
+    padding: 0;
+    font-size: 14px;
+    cursor: pointer;
+    text-align: left;
+  }
+  
+  .office-details-btn:hover {
+    color: #0066cc;
+  }
+  
+  .footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .footer-links a {
+    color: #666;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  
+  .footer-links a:hover {
+    color: #0066cc;
+  }
+  
+  .footer-bottom {
+    max-width: 1200px;
+    margin: 40px auto 0;
+    padding: 20px;
+    border-top: 1px solid #ddd;
+  }
+  
+  .social-links {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+  }
+  
+  .social-links a {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    transition: all 0.3s ease;
+  }
+  
+  .social-links a:hover {
+    background-color: #0066cc;
+    border-color: #0066cc;
+    color: #fff;
+  }
+  
+  @media (max-width: 768px) {
+    .footer-top {
+      grid-template-columns: 1fr;
+      gap: 30px;
+    }
+  
+    .social-links {
+      justify-content: center;
+    }
+  }

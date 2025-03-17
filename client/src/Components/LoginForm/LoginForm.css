@@ -1,0 +1,144 @@
+/* Container for the whole page */
+.login-container {
+    background-image: url('/src/Assets/ii.jpg');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    position: relative;
+}
+
+/* Logo container */
+.login-logo {
+    position: absolute;
+    top: 20px;
+    text-align: center;
+}
+
+.login-logo img {
+    height: 50px;
+}
+
+/* Login box styling */
+.login-box {
+    background-color: white;
+    padding: 40px 60px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    width: 600px;
+    text-align: center;
+    z-index: 1;
+}
+
+.login-box h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    position: relative;
+}
+
+/* Adding an underline to the Login title */
+.login-box h2::after {
+    content: '';
+    position: absolute;
+    width: 50px;
+    height: 3px;
+    background-color: #ddb347;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: -10px;
+}
+
+/* Input styling */
+.input-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    font-weight: 500;
+    color: #333;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    background-color: #f9f9f9;
+}
+
+/* Action buttons and links */
+.login-actions {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.login-actions a {
+    color: #666;
+    font-size: 12px;
+}
+
+.login-button {
+    background-color: transparent;
+    border: 2px solid #ddb347;
+    padding: 10px 20px;
+    border-radius: 50px;
+    color: #ddb347;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 30%;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+    background-color: #ddb347;
+    color: black;
+}
+
+/* Signup button styling */
+.signup-button {
+    background-color: transparent;
+    border: 2px solid #ddb347;
+    padding: 10px 20px;
+    border-radius: 50px;
+    color: #ddb347;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 30%;
+}
+
+.signup-button:hover {
+    background-color: #ddb347;
+    color: black;
+}
+
+/* Footer styling */
+.footer {
+    position: absolute;
+    bottom: 10px;
+    width: 100%;
+    text-align: center;
+    color: #666;
+    font-size: 12px;
+}
+
+.error-message {
+    color: red;
+    font-size: 0.9rem;
+    margin-top: 5px;
+    display: block;
+  }
+  

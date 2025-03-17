@@ -1,0 +1,104 @@
+/* Base styles for the navbar */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f4f4f4fe;
+  transition: background-color 0.3s ease;
+
+  z-index: 1000; /* Ensure navbar stays on top */
+}
+
+.navbar-transparent {
+  background-color: transparent;
+}
+
+.navbar-scrolled {
+  background-color: #f8f9fa; /* Background color when scrolled */
+  transition: background-color 0.3s; /* Smooth transition */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Logo styles */
+.navbar-logo img {
+  height: 40px; /* Logo height */
+}
+
+.navbar-logo img:hover {
+  transform: scale(1.1); /* Subtle hover effect */
+}
+
+/* Navbar menu styles */
+.navbar-menu {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Space between menu items */
+}
+
+.navbar-menu a {
+  margin-left: 20px;
+  text-decoration: none;
+  color: #333; /* Text color */
+  font-weight: bold; /* Bold text */
+  padding: 12px 20px;
+  font-size: 18px; /* Increased font size for better readability */
+  transition: color 0.3s ease, background-color 0.3s ease;
+  border-radius: 5px;
+}
+
+.navbar-menu a:hover {
+  color: #0e0c01; /* Hover color */
+  background-color: #f0c14b; /* A bolder hover effect */
+}
+
+/* Navbar toggler for mobile */
+.navbar-toggler {
+  display: none; /* Hide on larger screens */
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .navbar-menu {
+    display: none; /* Hide menu on small screens */
+  }
+
+  .navbar-toggler {
+    display: block; /* Show toggler on small screens */
+  }
+
+  .navbar-menu.active {
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    position: absolute;
+    top: 75px;
+    width: 100%;
+    left: 0;
+    z-index: 99;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Adds a shadow for better separation */
+    transition: all 0.3s ease;
+  }
+
+  .navbar-menu a {
+    text-align: center;
+    padding: 20px; /* Increased padding for mobile */
+  }
+}
+
+/* Additional Effects */
+.navbar-scrolled .navbar-menu a {
+  color: black; /* Ensures link color stays black when navbar background is white */
+}
+
+.navbar-scrolled .navbar-menu a:hover {
+  background-color: #ddb347;
+}
+

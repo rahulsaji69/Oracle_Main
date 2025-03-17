@@ -1,0 +1,193 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+body {
+  background-color: #f5f7fa;
+}
+
+.schedule-list {
+  max-width: 1200px;
+  margin: 80px auto; /* Increased top margin */
+  padding: 40px;
+  font-family: 'Poppins', sans-serif;
+  color: #333;
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.schedule-list h2 {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 40px;
+  font-size: 2.5em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  position: relative;
+}
+
+.schedule-list h2::after {
+  content: '';
+  position: absolute;
+  width: 100px;
+  height: 4px;
+  background-color: #fcdc4c;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -15px;
+  border-radius: 2px;
+}
+
+.search-form {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+  background-color: #f8f9fa;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.search-form input {
+  padding: 15px;
+  margin-right: 15px;
+  border: 2px solid #ddb347;
+  border-radius: 8px;
+  font-size: 16px;
+  width: 250px;
+  transition: all 0.3s ease;
+}
+
+.search-form input:focus {
+  outline: none;
+  border-color: #fcdc4c;
+  box-shadow: 0 0 0 3px rgba(252, 220, 76, 0.3);
+}
+
+.search-form button {
+  padding: 15px 30px;
+  background-color: #fcdc4c;
+  color: #2c3e50;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.search-form button:hover {
+  background-color: #ddb347;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(221, 179, 71, 0.3);
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background-color: #fff;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 15px;
+  overflow: hidden;
+  margin-top: 30px;
+}
+
+thead {
+  background-color: #fcdc4c;
+  color: #2c3e50;
+}
+
+th, td {
+  padding: 20px;
+  text-align: left;
+}
+
+th {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.9em;
+}
+
+tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+tbody tr {
+  transition: all 0.3s ease;
+}
+
+tbody tr:hover {
+  background-color: #fff9e6;
+  cursor: pointer;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.schedule-details {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  margin-top: 40px;
+}
+
+.schedule-details h3 {
+  color: #2c3e50;
+  margin-top: 0;
+  margin-bottom: 25px;
+  font-size: 1.8em;
+  font-weight: 600;
+  border-bottom: 3px solid #fcdc4c;
+  padding-bottom: 15px;
+}
+
+.schedule-details p {
+  margin-bottom: 20px;
+  line-height: 1.8;
+  font-size: 1.1em;
+}
+
+.schedule-details strong {
+  color: #a88734;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .schedule-list {
+    padding: 30px 20px;
+    margin: 20px;
+  }
+
+  .search-form {
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .search-form input,
+  .search-form button {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 15px;
+  }
+
+  table {
+    font-size: 0.9em;
+  }
+
+  th, td {
+    padding: 15px 10px;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.schedule-details {
+  animation: fadeIn 0.5s ease-out;
+}
