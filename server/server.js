@@ -6,6 +6,7 @@ const path = require("path");
 const indexRoutes = require("./Routes/indexRoutes");
 const paymentRoutes = require('./Routes/paymentRoutes');
 const supportRoutes = require('./Routes/supportRoutes');
+const carbonEmissionsRoutes = require('./Routes/carbonEmissionsRoutes');
 dotenv.config();
 
 const app = express();
@@ -27,6 +28,7 @@ mongoose
 app.use("/api", indexRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/support', supportRoutes);
+app.use('/api/carbon', carbonEmissionsRoutes);
 
 const PORT = process.env.PORT || 5000;
 

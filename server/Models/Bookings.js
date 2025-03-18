@@ -37,6 +37,24 @@ const BookingSchema = new mongoose.Schema({
   // Schedule and Route
   preferredShippingDate: { type: Date, required: true },
   preferredCarrier: { type: String },
+  
+  // Carbon Emissions Tracking
+  carbonEmissions: {
+    estimatedTotalEmissions: { type: Number }, // in kg of CO2
+    actualEmissions: { type: Number }, // in kg of CO2, updated after journey
+    emissionSavings: { type: Number }, // savings compared to standard route
+    emissionRate: { type: Number }, // emissions per ton-mile
+    optimizedRoute: { type: Boolean, default: false }, // if using AI optimized route
+    carbonOffsetApplied: { type: Boolean, default: false }, // if carbon offset purchased
+    carbonOffsetAmount: { type: Number }, // amount of carbon offset in kg
+    optimizationSuggestions: [{ type: String }], // AI suggestions for reducing emissions
+  },
+
+  // Ship Assignment
+  assignedShip: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Ship'
+  },
 
   // Insurance
   insuranceRequired: { type: Boolean, default: false },
