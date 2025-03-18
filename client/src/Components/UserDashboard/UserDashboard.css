@@ -191,19 +191,8 @@ body {
 .footer-section {
   background-color: #1a1a1a;
   color: #ffffff;
-  padding: 60px 0 40px;
-  position: relative;
-  overflow: hidden;
-}
-
-.footer-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #fcdc4c, #ffd700, #fcdc4c);
+  padding: 60px 0 20px;
+  margin-top: auto;
 }
 
 .footer-container {
@@ -218,7 +207,55 @@ body {
 .footer-left, .footer-center, .footer-right {
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 20px;
+}
+
+.footer-left h3, .footer-center h3, .footer-right h3 {
+  color: #fcdc4c;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+.footer-left p {
+  color: #cccccc;
+  line-height: 1.6;
+}
+
+.footer-center ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-center ul li {
+  margin-bottom: 12px;
+}
+
+.footer-center ul li a {
+  color: #cccccc;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-center ul li a:hover {
+  color: #fcdc4c;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #cccccc;
+}
+
+.contact-icon {
+  color: #fcdc4c;
+  font-size: 1.2rem;
 }
 
 .social-icons {
@@ -248,11 +285,16 @@ body {
   transform: translateY(-3px);
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .solutions-container {
-    grid-template-columns: repeat(3, 1fr);
-  }
+.footer-bottom {
+  text-align: center;
+  padding-top: 30px;
+  margin-top: 30px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-bottom p {
+  color: #cccccc;
+  font-size: 0.9rem;
 }
 
 @media (max-width: 992px) {
@@ -266,24 +308,8 @@ body {
 }
 
 @media (max-width: 768px) {
-  .main-title {
-    font-size: 2.5rem;
-    padding: 30px 20px;
-  }
-
-  .tracking-container {
-    position: static;
-    width: 90%;
-    margin: 20px auto;
-    transform: none;
-  }
-
-  .solutions-container {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .footer-section {
-    padding: 40px 0 30px;
+    padding: 40px 0 20px;
   }
   
   .footer-container {
@@ -295,20 +321,9 @@ body {
     text-align: center;
     align-items: center;
   }
-}
 
-@media (max-width: 480px) {
-  .main-title {
-    font-size: 2rem;
-    padding: 20px 10px;
-  }
-
-  .solutions-container {
-    grid-template-columns: 1fr;
-  }
-  
-  .tracking-container {
-    padding: 20px;
+  .contact-item {
+    justify-content: center;
   }
 }
 

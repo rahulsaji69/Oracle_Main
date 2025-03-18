@@ -21,6 +21,7 @@ import ShipRep from "./Pages/ShipRep";
 import Customs from "./Pages/Customs"; 
 import Support from "./Pages/Support";
 import Analytics from "./Pages/AdminPages/Analytics";
+import Trucking from "./Pages/Trucking";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
           <Route path="/shiprep" element={<ShipRep />} />
           <Route path="/customs" element={<Customs/>}/>
           <Route path="/support" element={<Support />} />
+          <Route path="/trucking" element={<Trucking />} />
           <Route element={<AppLayout />}>
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/admin-dashboard/ships" element={<Ship />} />

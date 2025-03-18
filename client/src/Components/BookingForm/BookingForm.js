@@ -327,7 +327,7 @@ const BookingForm = () => {
         `${Base_URL}/api/payment/create-order`,
         {
           amount: 10000 * 100, 
-          bookingId: bookingResponse.data.data._id
+          bookingId: bookingResponse.data.booking._id
         }
       );
 
@@ -343,7 +343,7 @@ const BookingForm = () => {
           try {
             // Verify payment
             const verificationResponse = await axios.post(`${Base_URL}/api/payment/verify`, {
-              bookingId: bookingResponse.data.data._id,
+              bookingId: bookingResponse.data.booking._id,
               paymentId: response.razorpay_payment_id,
               orderId: response.razorpay_order_id,
               signature: response.razorpay_signature,
@@ -351,7 +351,7 @@ const BookingForm = () => {
             });
 
             // Generate and download bill
-            generateBill(bookingResponse.data.data, {
+            generateBill(bookingResponse.data.booking, {
               paymentId: response.razorpay_payment_id,
               amount: orderResponse.data.order.amount
             });

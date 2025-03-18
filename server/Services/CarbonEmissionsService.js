@@ -7,6 +7,7 @@
 
 const Ship = require('../Models/Ship');
 const Booking = require('../Models/Bookings');
+const MLService = require('./MLService');
 
 /**
  * Calculate the distance between two ports using the Haversine formula
@@ -89,28 +90,53 @@ const getEmissionFactors = (ship) => {
  * @returns {Object} Emissions data
  */
 const calculateEmissions = async (booking, ship, routeDetails) => {
-  // Get the distance
-  const distance = calculateDistance(
-    routeDetails.originCoords,
-    routeDetails.destinationCoords
-  );
-  
-  // Get emission factors
-  const emissionFactors = getEmissionFactors(ship);
-  
-  // Calculate total emissions based on cargo weight and distance
-  const totalWeight = booking.cargoWeight * booking.cargoQuantity;
-  const estimatedEmissions = distance * emissionFactors.adjustedEmissionRate * totalWeight;
-  
-  // Calculate emission rate per ton-mile
-  const emissionRate = estimatedEmissions / (totalWeight * distance);
-  
-  return {
-    estimatedTotalEmissions: estimatedEmissions,
-    emissionRate: emissionRate,
-    distance: distance,
-    emissionFactors: emissionFactors
-  };
+  try {
+    if (MLService) {
+      // Try ML-based prediction first
+      const prediction = await MLService.predictEmissions(
+        {
+          origin: routeDetails.originCoords,
+          destination: routeDetails.destinationCoords,
+          distance: calculateDistance(routeDetails.originCoords, routeDetails.destinationCoords),
+          ship: {
+            emissionClass: ship.emissionClass,
+            fuelType: ship.fuelType,
+            greenTechnologyEquipped: ship.greenTechnologyEquipped
+          },
+          cargo: {
+            weight: booking.cargoWeight,
+            quantity: booking.cargoQuantity
+          }
+        }
+      );
+
+      if (prediction) {
+        return {
+          estimatedTotalEmissions: prediction.estimatedEmissions,
+          emissionRate: prediction.estimatedEmissions / (booking.cargoWeight * booking.cargoQuantity),
+          distance: calculateDistance(routeDetails.originCoords, routeDetails.destinationCoords),
+          confidence: prediction.confidence
+        };
+      }
+    }
+
+    // Fallback to traditional calculation if ML prediction fails
+    const distance = calculateDistance(routeDetails.originCoords, routeDetails.destinationCoords);
+    const emissionFactors = getEmissionFactors(ship);
+    const totalWeight = booking.cargoWeight * booking.cargoQuantity;
+    const estimatedEmissions = distance * emissionFactors.adjustedEmissionRate * totalWeight;
+    
+    return {
+      estimatedTotalEmissions: estimatedEmissions,
+      emissionRate: estimatedEmissions / (totalWeight * distance),
+      distance: distance,
+      emissionFactors: emissionFactors,
+      confidence: 0.8
+    };
+  } catch (error) {
+    console.error('Error calculating emissions:', error);
+    throw error;
+  }
 };
 
 /**
@@ -165,65 +191,102 @@ const generateOptimizationSuggestions = (booking, ship, emissionsData) => {
  * @returns {Object} Optimized route and emissions data
  */
 const predictOptimizedRoute = async (booking, ship, routeDetails) => {
-  // Simple ML simulation - in a real implementation, this would use a trained ML model
-  // to predict optimal routes based on historical data, weather patterns, etc.
-  
-  // For demo purposes, we'll assume the ML model can find a route that's 8-15% more efficient
-  const standardEmissions = await calculateEmissions(booking, ship, routeDetails);
-  
-  // Random optimization between 8-15%
-  const optimizationFactor = 0.08 + (Math.random() * 0.07);
-  const optimizedEmissions = standardEmissions.estimatedTotalEmissions * (1 - optimizationFactor);
-  const emissionSavings = standardEmissions.estimatedTotalEmissions - optimizedEmissions;
-  
-  // Generate AI suggestions
-  const suggestions = generateOptimizationSuggestions(booking, ship, standardEmissions);
-  
-  return {
-    standardRoute: {
-      emissions: standardEmissions.estimatedTotalEmissions,
-      distance: standardEmissions.distance
-    },
-    optimizedRoute: {
-      emissions: optimizedEmissions,
-      distance: standardEmissions.distance * (1 - (optimizationFactor / 2)), // Assume part of optimization is distance
-      emissionSavings: emissionSavings,
-      optimizationPercentage: optimizationFactor * 100
-    },
-    suggestions: suggestions
-  };
-};
-
-/**
- * Update a booking with carbon emissions data
- * @param {string} bookingId - ID of the booking to update
- * @param {Object} emissionsData - Emissions data to save
- * @returns {Object} Updated booking
- */
-const updateBookingEmissions = async (bookingId, emissionsData) => {
   try {
-    const booking = await Booking.findById(bookingId);
-    
-    if (!booking) {
-      throw new Error('Booking not found');
+    if (MLService) {
+      // Get ML-based route optimization
+      const optimizedRoute = await MLService.optimizeRoute(
+        routeDetails.originCoords,
+        routeDetails.destinationCoords,
+        {
+          weight: booking.cargoWeight,
+          quantity: booking.cargoQuantity
+        }
+      );
+
+      if (optimizedRoute) {
+        // Calculate emissions for both standard and optimized routes
+        const standardEmissions = await calculateEmissions(booking, ship, routeDetails);
+        const optimizedEmissions = await calculateEmissions(booking, ship, {
+          originCoords: routeDetails.originCoords,
+          destinationCoords: {
+            lat: optimizedRoute.coordinates[0],
+            lng: optimizedRoute.coordinates[1]
+          }
+        });
+
+        const emissionSavings = standardEmissions.estimatedTotalEmissions - optimizedEmissions.estimatedTotalEmissions;
+        
+        // Generate AI suggestions
+        const suggestions = generateOptimizationSuggestions(booking, ship, standardEmissions);
+        
+        return {
+          standardRoute: {
+            emissions: standardEmissions.estimatedTotalEmissions,
+            distance: standardEmissions.distance
+          },
+          optimizedRoute: {
+            emissions: optimizedEmissions.estimatedTotalEmissions,
+            distance: optimizedRoute.coordinates[2],
+            emissionSavings: emissionSavings,
+            optimizationPercentage: optimizedRoute.coordinates[5] * 100
+          },
+          suggestions: suggestions,
+          confidence: optimizedRoute.confidence
+        };
+      }
     }
+
+    // Fallback to traditional optimization if ML fails
+    const standardEmissions = await calculateEmissions(booking, ship, routeDetails);
+    const optimizationFactor = 0.08 + (Math.random() * 0.07);
+    const optimizedEmissions = standardEmissions.estimatedTotalEmissions * (1 - optimizationFactor);
+    const emissionSavings = standardEmissions.estimatedTotalEmissions - optimizedEmissions;
     
-    booking.carbonEmissions = {
-      ...booking.carbonEmissions,
-      ...emissionsData
+    return {
+      standardRoute: {
+        emissions: standardEmissions.estimatedTotalEmissions,
+        distance: standardEmissions.distance
+      },
+      optimizedRoute: {
+        emissions: optimizedEmissions,
+        distance: standardEmissions.distance * (1 - (optimizationFactor / 2)),
+        emissionSavings: emissionSavings,
+        optimizationPercentage: optimizationFactor * 100
+      },
+      suggestions: generateOptimizationSuggestions(booking, ship, standardEmissions),
+      confidence: 0.8
     };
-    
-    await booking.save();
-    return booking;
   } catch (error) {
+    console.error('Error predicting optimized route:', error);
     throw error;
   }
 };
 
 /**
- * Get total carbon emissions for a time period
- * @param {Date} startDate - Start date of period
- * @param {Date} endDate - End date of period
+ * Update booking with emissions data
+ * @param {String} bookingId - Booking ID
+ * @param {Object} emissionsData - Emissions data to update
+ */
+const updateBookingEmissions = async (bookingId, emissionsData) => {
+  try {
+    await Booking.findByIdAndUpdate(bookingId, {
+      $set: {
+        'carbonEmissions': {
+          ...emissionsData,
+          updatedAt: new Date()
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error updating booking emissions:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get emissions statistics
+ * @param {Date} startDate - Start date for statistics
+ * @param {Date} endDate - End date for statistics
  * @returns {Object} Emissions statistics
  */
 const getEmissionsStats = async (startDate, endDate) => {
@@ -232,34 +295,35 @@ const getEmissionsStats = async (startDate, endDate) => {
       createdAt: { $gte: startDate, $lte: endDate },
       'carbonEmissions.estimatedTotalEmissions': { $exists: true }
     });
-    
-    let totalEmissions = 0;
-    let totalSavings = 0;
-    let totalOffset = 0;
-    let countOptimizedRoutes = 0;
-    
-    bookings.forEach(booking => {
-      if (booking.carbonEmissions) {
-        totalEmissions += booking.carbonEmissions.estimatedTotalEmissions || 0;
-        totalSavings += booking.carbonEmissions.emissionSavings || 0;
-        totalOffset += booking.carbonEmissions.carbonOffsetAmount || 0;
-        
-        if (booking.carbonEmissions.optimizedRoute) {
-          countOptimizedRoutes++;
-        }
-      }
-    });
-    
-    return {
-      totalBookings: bookings.length,
-      totalEmissions,
-      totalSavings,
-      totalOffset,
-      countOptimizedRoutes,
-      percentOptimized: bookings.length > 0 ? (countOptimizedRoutes / bookings.length) * 100 : 0,
-      averageEmissionsPerBooking: bookings.length > 0 ? totalEmissions / bookings.length : 0
+
+    const stats = {
+      totalEmissions: 0,
+      totalSavings: 0,
+      totalOffset: 0,
+      percentOptimized: 0,
+      averageEmissionRate: 0
     };
+
+    if (bookings.length > 0) {
+      stats.totalEmissions = bookings.reduce((sum, booking) => 
+        sum + (booking.carbonEmissions?.estimatedTotalEmissions || 0), 0);
+      
+      stats.totalSavings = bookings.reduce((sum, booking) => 
+        sum + (booking.carbonEmissions?.emissionSavings || 0), 0);
+      
+      stats.totalOffset = bookings.reduce((sum, booking) => 
+        sum + (booking.carbonEmissions?.carbonOffsetAmount || 0), 0);
+      
+      stats.percentOptimized = (bookings.filter(booking => 
+        booking.carbonEmissions?.optimizedRoute).length / bookings.length) * 100;
+      
+      stats.averageEmissionRate = bookings.reduce((sum, booking) => 
+        sum + (booking.carbonEmissions?.emissionRate || 0), 0) / bookings.length;
+    }
+
+    return stats;
   } catch (error) {
+    console.error('Error getting emissions stats:', error);
     throw error;
   }
 };

@@ -1,0 +1,125 @@
+.trucking-module-container {
+  padding-top: 30px;
+  padding-bottom: 70px;
+}
+
+.module-header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 20px;
+}
+
+.module-title {
+  font-weight: 700 !important;
+  margin-bottom: 10px !important;
+  color: #2c3e50;
+}
+
+.module-subtitle {
+  color: #7f8c8d;
+}
+
+.tab-container {
+  margin-bottom: 30px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.tabs {
+  background-color: #f8f9fa;
+}
+
+.dashboard-grid {
+  margin-top: 20px;
+}
+
+.stats-card {
+  height: 100%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+  transition: transform 0.3s ease;
+}
+
+.stats-card:hover {
+  transform: translateY(-5px);
+}
+
+.section-heading {
+  margin: 20px 0 10px !important;
+  font-weight: 600 !important;
+  color: #2c3e50;
+}
+
+.action-card {
+  height: 180px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.action-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-icon {
+  font-size: 40px !important;
+  margin-bottom: 16px !important;
+  color: #3498db;
+}
+
+.tab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.report-card {
+  height: 100%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Form Dialog Styling */
+.MuiDialog-paper {
+  padding: 10px;
+}
+
+.MuiDialogTitle-root {
+  background-color: #f8f9fa;
+  padding: 16px 24px !important;
+}
+
+.MuiDialogContent-root {
+  padding: 20px 24px !important;
+}
+
+.MuiDialogActions-root {
+  padding: 16px 24px !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 960px) {
+  .action-card {
+    height: 160px;
+  }
+  
+  .card-icon {
+    font-size: 32px !important;
+    margin-bottom: 12px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .module-title {
+    font-size: 1.8rem !important;
+  }
+  
+  .tab-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+} 

@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./UserDashboard.css";
-import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaYoutube, FaTruck, FaCalendarAlt, FaBoxOpen, FaUserCog, FaCheckCircle, FaMapMarkerAlt, FaClock, FaRoute, FaHistory, FaEye, FaFileAlt, FaFileInvoice, FaFileContract } from 'react-icons/fa';
+import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaYoutube, FaTruck, FaCalendarAlt, FaBoxOpen, FaUserCog, FaCheckCircle, FaMapMarkerAlt, FaClock, FaRoute, FaHistory, FaEye, FaFileAlt, FaFileInvoice, FaFileContract, FaHome, FaBook, FaShip, FaTruckLoading, FaUser, FaPhone, FaEnvelope, FaMapMarker } from 'react-icons/fa';
 
 import { 
   Drawer, 
@@ -51,6 +51,58 @@ import fruitsImg from '../../Assets/fruits.webp';
 import pharmaceuticalsImg from '../../Assets/pharmaceuticals.webp';
 import carPartsImg from '../../Assets/car-parts.webp';
 
+const Footer = () => {
+  return (
+    <footer className="footer-section">
+      <div className="footer-container">
+        <div className="footer-left">
+          <h3>About Us</h3>
+          <p>Ocean Oracle is your trusted partner in global shipping and logistics solutions. We provide comprehensive services to meet all your transportation needs.</p>
+          <div className="social-icons">
+            <a href="#"><FaFacebookF /></a>
+            <a href="#"><FaTwitter /></a>
+            <a href="#"><FaInstagram /></a>
+            <a href="#"><FaLinkedinIn /></a>
+            <a href="#"><FaYoutube /></a>
+          </div>
+        </div>
+        
+        <div className="footer-center">
+          <h3>Quick Links</h3>
+          <ul>
+            <li><Link to="/dashboard">Dashboard</Link></li>
+            <li><Link to="/dashboard/bookings">Bookings</Link></li>
+            <li><Link to="/dashboard/shipping">Shipping</Link></li>
+            <li><Link to="/dashboard/trucking">Trucking</Link></li>
+            <li><Link to="/dashboard/profile">Profile</Link></li>
+          </ul>
+        </div>
+        
+        <div className="footer-right">
+          <h3>Contact Us</h3>
+          <div className="contact-info">
+            <div className="contact-item">
+              <FaPhone className="contact-icon" />
+              <span>+1 (555) 123-4567</span>
+            </div>
+            <div className="contact-item">
+              <FaEnvelope className="contact-icon" />
+              <span>info@oceanoracle.com</span>
+            </div>
+            <div className="contact-item">
+              <FaMapMarker className="contact-icon" />
+              <span>123 Shipping Lane, Port City, PC 12345</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="footer-bottom">
+        <p>&copy; 2024 Ocean Oracle. All rights reserved.</p>
+      </div>
+    </footer>
+  );
+};
+
 const Dashboard = () => {
   const [fromPort, setFromPort] = useState('');
   const [toPort, setToPort] = useState('');
@@ -62,18 +114,10 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('schedules');
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const [openTruckingDialog, setOpenTruckingDialog] = useState(false);
   const [openSchedulingDialog, setOpenSchedulingDialog] = useState(false);
   const [openMovementDialog, setOpenMovementDialog] = useState(false);
   const [openDriverDialog, setOpenDriverDialog] = useState(false);
   const [openDeliveryDialog, setOpenDeliveryDialog] = useState(false);
-  const [truckingFormData, setTruckingFormData] = useState({
-    companyName: '',
-    contactPerson: '',
-    phone: '',
-    email: '',
-    fleet: ''
-  });
   const [schedulingFormData, setSchedulingFormData] = useState({
     pickupDate: '',
     pickupTime: '',
@@ -179,14 +223,6 @@ const Dashboard = () => {
     setAnchorEl(null);
   };
 
-  const handleOpenTruckingDialog = () => {
-    setOpenTruckingDialog(true);
-  };
-
-  const handleCloseTruckingDialog = () => {
-    setOpenTruckingDialog(false);
-  };
-
   const handleOpenSchedulingDialog = () => {
     setOpenSchedulingDialog(true);
   };
@@ -219,11 +255,6 @@ const Dashboard = () => {
     setOpenDeliveryDialog(false);
   };
 
-  const handleTruckingSubmit = () => {
-    toast.success("Trucking company information submitted successfully!");
-    setOpenTruckingDialog(false);
-  };
-
   const handleSchedulingSubmit = () => {
     toast.success("Pickup/delivery scheduled successfully!");
     setOpenSchedulingDialog(false);
@@ -242,14 +273,6 @@ const Dashboard = () => {
   const handleDeliverySubmit = () => {
     toast.success("Delivery confirmed successfully!");
     setOpenDeliveryDialog(false);
-  };
-
-  const handleTruckingFormChange = (e) => {
-    const { name, value } = e.target;
-    setTruckingFormData({
-      ...truckingFormData,
-      [name]: value
-    });
   };
 
   const handleSchedulingFormChange = (e) => {
@@ -474,66 +497,87 @@ const Dashboard = () => {
         {drawerList}
       </Drawer>
       <div style={{ marginTop: '70px', padding: '20px' }}>
-        <div className="booking-history-section">
-          <h2 className="section-title">Booking History</h2>
-          <p className="section-description">View and manage your past bookings</p>
-          
-          {isLoadingBookings ? (
-            <div className="loading-spinner">
-              <Typography>Loading booking history...</Typography>
+        <div className="header-section">
+          <h1 className="main-title">Welcome to Your Dashboard</h1>
+          <div className="tracking-container">
+            <div className="tracking-tabs">
+              <button 
+                className={`tab ${activeTab === 'tracking' ? 'active' : ''}`}
+                onClick={() => setActiveTab('tracking')}
+              >
+                TRACKING
+              </button>
+              <button 
+                className={`tab ${activeTab === 'schedules' ? 'active' : ''}`}
+                onClick={() => setActiveTab('schedules')}
+              >
+                SCHEDULES
+              </button>
+              <button 
+                className={`tab ${activeTab === 'contacts' ? 'active' : ''}`}
+                onClick={() => setActiveTab('contacts')}
+              >
+                CONTACTS
+              </button>
             </div>
-          ) : (
-            <div className="booking-history-table">
-              <Card>
-                <CardContent>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Booking ID</TableCell>
-                        <TableCell>Date</TableCell>
-                        <TableCell>Origin</TableCell>
-                        <TableCell>Destination</TableCell>
-                        <TableCell>Status</TableCell>
-                        <TableCell>Actions</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {bookingHistory.length > 0 ? (
-                        bookingHistory.map((booking) => (
-                          <TableRow key={booking.id} className="booking-row">
-                            <TableCell>{booking.id}</TableCell>
-                            <TableCell>{new Date(booking.date).toLocaleDateString()}</TableCell>
-                            <TableCell>{booking.origin}</TableCell>
-                            <TableCell>{booking.destination}</TableCell>
-                            <TableCell>
-                              <span className={`status-badge status-${booking.status.toLowerCase().replace(/\s+/g, '-')}`}>
-                                {booking.status}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              <IconButton
-                                color="primary"
-                                onClick={() => handleViewBookingDetail(booking)}
-                                title="View Details"
-                              >
-                                <FaEye />
-                              </IconButton>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      ) : (
-                        <TableRow>
-                          <TableCell colSpan={6} align="center">
-                            No booking history found
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+            {activeTab === 'tracking' && (
+              <div className="tracking-content">
+                <div className="tracking-options">
+                  <label>
+                    <input type="radio" name="tracking" value="container" defaultChecked />
+                    Container / Bill of Lading Number
+                  </label>
+                  <label>
+                    <input type="radio" name="tracking" value="booking" />
+                    Booking Number
+                  </label>
+                </div>
+                <input type="text" placeholder="Search..." className="search-input" />
+              </div>
+            )}
+            {activeTab === 'schedules' && (
+              <div className="schedules-content">
+                <div className="port-inputs">
+                  <input
+                    type="text"
+                    placeholder="From (Port)"
+                    className="port-input"
+                    value={fromPort}
+                    onChange={(e) => setFromPort(e.target.value)}
+                  />
+                  <button className="swap-button" onClick={() => {
+                    const temp = fromPort;
+                    setFromPort(toPort);
+                    setToPort(temp);
+                  }}>⇄</button>
+                  <input
+                    type="text"
+                    placeholder="To (Port)"
+                    className="port-input"
+                    value={toPort}
+                    onChange={(e) => setToPort(e.target.value)}
+                  />
+                </div>
+                <input
+                  type="date"
+                  className="date-input"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+                <button
+                  className="search-button"
+                  onClick={() => navigate(`/shipschedules?from=${fromPort}&to=${toPort}&date=${date}`)}
+                >
+                  Search
+                </button>
+              </div>
+            )}
+            {activeTab === 'contacts' && (
+              <div className="contacts-content">
+                <p>Contacts information will be displayed here.</p>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="tracking-section">
@@ -643,25 +687,11 @@ const Dashboard = () => {
             </div>
           )}
 
-          <div className="trucking-services-section">
-            <h2 className="section-title">Trucking Services</h2>
-            <p className="section-description">Manage your inland transportation needs with our comprehensive trucking services</p>
+          <div className="services-section">
+            <h2 className="section-title">Services</h2>
+            <p className="section-description">Manage your shipping and delivery needs</p>
             
-            <Grid container spacing={3} className="trucking-services-grid">
-              <Grid item xs={12} sm={6} md={4}>
-                <Card className="service-card" onClick={handleOpenTruckingDialog}>
-                  <CardContent>
-                    <FaTruck size={40} className="service-icon" />
-                    <Typography variant="h6" component="div">
-                      Trucking Company
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Register or manage your trucking company information
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              
+            <Grid container spacing={3} className="services-grid">
               <Grid item xs={12} sm={6} md={4}>
                 <Card className="service-card" onClick={handleOpenSchedulingDialog}>
                   <CardContent>
@@ -719,145 +749,71 @@ const Dashboard = () => {
               </Grid>
             </Grid>
           </div>
+        </div>
 
-          <div className="header-section">
-            <h1 className="main-title">Welcome to Your Dashboard</h1>
-            <div className="tracking-container">
-              <div className="tracking-tabs">
-                <button 
-                  className={`tab ${activeTab === 'tracking' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('tracking')}
-                >
-                  TRACKING
-                </button>
-                <button 
-                  className={`tab ${activeTab === 'schedules' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('schedules')}
-                >
-                  SCHEDULES
-                </button>
-                <button 
-                  className={`tab ${activeTab === 'contacts' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('contacts')}
-                >
-                  CONTACTS
-                </button>
-              </div>
-              {activeTab === 'tracking' && (
-                <div className="tracking-content">
-                  <div className="tracking-options">
-                    <label>
-                      <input type="radio" name="tracking" value="container" defaultChecked />
-                      Container / Bill of Lading Number
-                    </label>
-                    <label>
-                      <input type="radio" name="tracking" value="booking" />
-                      Booking Number
-                    </label>
-                  </div>
-                  <input type="text" placeholder="Search..." className="search-input" />
-                </div>
-              )}
-              {activeTab === 'schedules' && (
-                <div className="schedules-content">
-                  <div className="port-inputs">
-                    <input
-                      type="text"
-                      placeholder="From (Port)"
-                      className="port-input"
-                      value={fromPort}
-                      onChange={(e) => setFromPort(e.target.value)}
-                    />
-                    <button className="swap-button" onClick={() => {
-                      const temp = fromPort;
-                      setFromPort(toPort);
-                      setToPort(temp);
-                    }}>⇄</button>
-                    <input
-                      type="text"
-                      placeholder="To (Port)"
-                      className="port-input"
-                      value={toPort}
-                      onChange={(e) => setToPort(e.target.value)}
-                    />
-                  </div>
-                  <input
-                    type="date"
-                    className="date-input"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                  />
-                  <button
-                    className="search-button"
-                    onClick={() => navigate(`/shipschedules?from=${fromPort}&to=${toPort}&date=${date}`)}
-                  >
-                    Search
-                  </button>
-                </div>
-              )}
-              {activeTab === 'contacts' && (
-                <div className="contacts-content">
-                  <p>Contacts information will be displayed here.</p>
-                </div>
-              )}
+        <div className="booking-history-section">
+          <h2 className="section-title">Booking History</h2>
+          <p className="section-description">View and manage your past bookings</p>
+          
+          {isLoadingBookings ? (
+            <div className="loading-spinner">
+              <Typography>Loading booking history...</Typography>
             </div>
-          </div>
+          ) : (
+            <div className="booking-history-table">
+              <Card>
+                <CardContent>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Booking ID</TableCell>
+                        <TableCell>Date</TableCell>
+                        <TableCell>Origin</TableCell>
+                        <TableCell>Destination</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {bookingHistory.length > 0 ? (
+                        bookingHistory.map((booking) => (
+                          <TableRow key={booking.id} className="booking-row">
+                            <TableCell>{booking.id}</TableCell>
+                            <TableCell>{new Date(booking.date).toLocaleDateString()}</TableCell>
+                            <TableCell>{booking.origin}</TableCell>
+                            <TableCell>{booking.destination}</TableCell>
+                            <TableCell>
+                              <span className={`status-badge status-${booking.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                                {booking.status}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <IconButton
+                                color="primary"
+                                onClick={() => handleViewBookingDetail(booking)}
+                                title="View Details"
+                              >
+                                <FaEye />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={6} align="center">
+                            No booking history found
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </div>
-
-      <Dialog open={openTruckingDialog} onClose={handleCloseTruckingDialog} maxWidth="md">
-        <DialogTitle>Register Trucking Company</DialogTitle>
-        <DialogContent>
-          <TextField
-            margin="dense"
-            label="Company Name"
-            name="companyName"
-            fullWidth
-            value={truckingFormData.companyName}
-            onChange={handleTruckingFormChange}
-          />
-          <TextField
-            margin="dense"
-            label="Contact Person"
-            name="contactPerson"
-            fullWidth
-            value={truckingFormData.contactPerson}
-            onChange={handleTruckingFormChange}
-          />
-          <TextField
-            margin="dense"
-            label="Phone Number"
-            name="phone"
-            fullWidth
-            value={truckingFormData.phone}
-            onChange={handleTruckingFormChange}
-          />
-          <TextField
-            margin="dense"
-            label="Email"
-            name="email"
-            type="email"
-            fullWidth
-            value={truckingFormData.email}
-            onChange={handleTruckingFormChange}
-          />
-          <TextField
-            margin="dense"
-            label="Fleet Size & Types"
-            name="fleet"
-            fullWidth
-            multiline
-            rows={3}
-            value={truckingFormData.fleet}
-            onChange={handleTruckingFormChange}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseTruckingDialog}>Cancel</Button>
-          <Button onClick={handleTruckingSubmit} color="primary">Submit</Button>
-        </DialogActions>
-      </Dialog>
-
+      <Footer />
       <Dialog open={openSchedulingDialog} onClose={handleCloseSchedulingDialog} maxWidth="md">
         <DialogTitle>Schedule Pickup/Delivery</DialogTitle>
         <DialogContent>
