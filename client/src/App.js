@@ -19,6 +19,8 @@ import ShipSchedules from "./Pages/ShipSchedules";
 import BookingPage from "./Pages/AdminPages/BookingPage";
 import ShipRep from "./Pages/ShipRep";
 import Customs from "./Pages/Customs"; 
+import Support from "./Pages/Support";
+
 function App() {
   return (
     <div className="App">
@@ -36,6 +38,7 @@ function App() {
           <Route path="/shipschedules" element={<ShipSchedules />} />
           <Route path="/shiprep" element={<ShipRep />} />
           <Route path="/customs" element={<Customs/>}/>
+          <Route path="/support" element={<Support />} />
           <Route element={<AppLayout />}>
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/admin-dashboard/ships" element={<Ship />} />

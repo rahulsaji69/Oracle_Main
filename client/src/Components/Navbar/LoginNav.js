@@ -8,13 +8,14 @@ import {
   Typography, 
   Button, 
   Menu, 
-  MenuItem 
+  MenuItem,
+  Box
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import Logo from '../../Assets/Logo.jpg';
 
-const LoginNav = ({ toggleDrawer, userDetails }) => {
+const LoginNav = ({ toggleDrawer = () => () => {}, userDetails }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
 
@@ -35,42 +36,96 @@ const LoginNav = ({ toggleDrawer, userDetails }) => {
   };
 
   return (
-    <AppBar position="fixed" style={{ backgroundColor: 'white', color: '#333' }}>
-      <Toolbar style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <AppBar position="fixed" style={{ backgroundColor: 'white', color: '#333', boxShadow: 'none', borderBottom: '1px solid #eee' }}>
+      <Toolbar style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px' }}>
         <IconButton
           edge="start"
           color="inherit"
           aria-label="menu"
           onClick={toggleDrawer(true)}
+          sx={{ marginRight: 2 }}
         >
           <MenuIcon />
         </IconButton>
-        <div className="navbar-logo" style={{ flexGrow: 1, textAlign: 'center' }}>
+
+        {/* Center section with logo */}
+        <Box sx={{ 
+          position: 'absolute', 
+          left: '50%', 
+          transform: 'translateX(-50%)',
+          display: 'flex',
+          alignItems: 'center'
+        }}>
           <Link to="/">
-            <img src={Logo} alt="Logo" style={{ height: '40px' }} />
+            <img src={Logo} alt="Logo" style={{ height: '45px' }} />
           </Link>
-        </div>
-        <div className="navbar-menu" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <Link to="#search" style={{ textDecoration: 'none', color: '#333', fontWeight: 'bold' }}>Search</Link>
-          <Link to="#tracking" style={{ textDecoration: 'none', color: '#333', fontWeight: 'bold' }}>Tracking</Link>
+        </Box>
+
+        {/* Right section with navigation items */}
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center',
+          gap: '32px',
+          marginLeft: 'auto'
+        }}>
+          <Link to="/search" style={{ 
+            textDecoration: 'none', 
+            color: '#333', 
+            fontWeight: '500',
+            fontSize: '16px'
+          }}>
+            Search
+          </Link>
+          <Link to="/tracking" style={{ 
+            textDecoration: 'none', 
+            color: '#333', 
+            fontWeight: '500',
+            fontSize: '16px'
+          }}>
+            Tracking
+          </Link>
+          <Link to="/support" style={{ 
+            textDecoration: 'none', 
+            color: '#333', 
+            fontWeight: '500',
+            fontSize: '16px'
+          }}>
+            Support
+          </Link>
           
-          <Button
-            onClick={handleProfileClick}
-            style={{ display: 'flex', alignItems: 'center', marginLeft: '20px' }}
-          >
-            <Typography variant="subtitle1" style={{ marginRight: '10px' }}>
-              {userDetails ? userDetails.name : "Guest"}
-            </Typography>
-            <AccountCircle style={{ fontSize: '30px', color: '#333' }} />
-          </Button>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleCloseMenu}
-          >
-            <MenuItem onClick={handleLogout}>Logout</MenuItem>
-          </Menu>
-        </div>
+          <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: '16px' }}>
+            <Button
+              onClick={handleProfileClick}
+              style={{ 
+                textTransform: 'none',
+                color: '#333',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <Typography variant="body1" style={{ fontWeight: '500' }}>
+                {userDetails ? userDetails.name : "GUEST"}
+              </Typography>
+              <AccountCircle />
+            </Button>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleCloseMenu}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+            >
+              <MenuItem onClick={handleLogout}>Logout</MenuItem>
+            </Menu>
+          </Box>
+        </Box>
       </Toolbar>
     </AppBar>
   );

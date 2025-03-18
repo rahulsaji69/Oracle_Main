@@ -13,6 +13,7 @@ import pharmaceuticalsImg from '../../Assets/pharmaceuticals.webp';
 import carPartsImg from '../../Assets/car-parts.webp';
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaYoutube } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import Footer from '../Footer/Footer';
 //import cargoCoverImage from '../../Assets/cargo cover solution.jpg'; 
 
 const HomePage = () => {
@@ -216,68 +217,54 @@ const HomePage = () => {
         </div>
       </section>
 
-      <footer className="footer-section">
-        <div className="footer-container">
-          <div className="footer-left">
-            <div className="location-selector">
-              <select defaultValue="IN" className="country-select">
-                <option value="IN">IN</option>
-                {/* Add more country options */}
-              </select>
-              <select defaultValue="MUMBAI" className="office-select">
-                <option value="MUMBAI">OCEAN ORACLE MUMBAI</option>
-                {/* Add more office options */}
-              </select>
+      {/* Customer Support Section */}
+      <section className="customer-support-section">
+        <div className="container">
+          <h2 className="section-title">Customer Support</h2>
+          <div className="title-underline"></div>
+          
+          <div className="support-options">
+            <div className="support-card">
+              <div className="support-icon">
+                <i className="fas fa-question-circle"></i>
+              </div>
+              <h3>FAQ</h3>
+              <p>Find answers to frequently asked questions about our shipping services.</p>
+              <Link to="/support?tab=faq" className="support-link">View FAQs</Link>
             </div>
-            <div className="contact-info">
-              <a href="tel:+912226378000"><i className="fas fa-phone"></i>+91 2226378000</a>
-              <a href="mailto:info@oceanoracle.com"><i className="fas fa-envelope"></i>info@oceanoracle.com</a>
-              <a href="tt"><i className="fas fa-map-marker-alt"></i>Office details</a>
+            
+            <div className="support-card">
+              <div className="support-icon">
+                <i className="fas fa-book"></i>
+              </div>
+              <h3>Documentation</h3>
+              <p>Access user guides and detailed documentation for all our services.</p>
+              <Link to="/support?tab=documentation" className="support-link">View Docs</Link>
             </div>
-          </div>
-
-          <div className="footer-center">
-            <div className="footer-links">
-              <span>Solutions</span>
-              <span>Local information</span>
-              <span>E-Business</span>
-              <span>Sustainability</span>
-              <span>myOceanOracle</span>
+            
+            <div className="support-card">
+              <div className="support-icon">
+                <i className="fas fa-ticket-alt"></i>
+              </div>
+              <h3>Submit a Ticket</h3>
+              <p>Need specialized help? Submit a support ticket and our team will assist you.</p>
+              <Link to="/support?tab=ticket" className="support-link">Create Ticket</Link>
             </div>
-          </div>
-
-          <div className="footer-section">
-          <h3>GET TO KNOW US</h3>
-          <div className="footer-links">
-            <Link to="/about">Ocean Oracle Group</Link>
-            <Link to="/newsroom">Newsroom</Link>
-            <Link to="/events">Events</Link>
-            <Link to="/blog">Blog</Link>
-            <Link to="/careers">Careers</Link>
-            <Link to="/contact">Contact us</Link>
-            <Link to="/preferences">Preference Center</Link>
-          </div>
-        
-            <div className="social-icons">
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
-            <FaFacebookF />
-          </a>
-          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
-            <FaTwitter />
-          </a>
-          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
-            <FaInstagram />
-          </a>
-          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
-            <FaLinkedinIn />
-          </a>
-          <a href="https://youtube.com" target="_blank" rel="noopener noreferrer">
-            <FaYoutube />
-          </a>
+            
+            <div className="support-card">
+              <div className="support-icon">
+                <i className="fas fa-comments"></i>
+              </div>
+              <h3>Live Chat</h3>
+              <p>Get immediate assistance through our live chat support system.</p>
+              <Link to="/support?tab=chat" className="support-link">Start Chat</Link>
             </div>
           </div>
         </div>
-      </footer>
+      </section>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
