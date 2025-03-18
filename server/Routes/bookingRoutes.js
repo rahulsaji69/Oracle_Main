@@ -8,4 +8,7 @@ router.get('/bookings', bookingController.getAllBookings);
 
 router.get('/bookings/:id', bookingController.getBookingById);
 
+// Add update route
+router.put('/bookings/:id', bookingController.updateBooking);
+
 module.exports = router;

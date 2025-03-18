@@ -99,22 +99,36 @@ const BookingForm = () => {
       case 'containerSize':
         if (!value) error = 'Container size is required';
         break;
-      case 'cargoWeight':
-        const maxWeights = {
-          '20ft': 28200, // kg
-          '40ft': 26280, // kg
-          '40ft-hc': 26460, // kg
-        };
-        if (!value) {
-          error = 'Weight is required';
-        } else if (value <= 0) {
-          error = 'Weight must be greater than 0';
-        } else if (formData.containerSize && value > maxWeights[formData.containerSize]) {
-          error = `Maximum weight for ${formData.containerSize} container is ${maxWeights[formData.containerSize]}kg`;
-        }
-        break;
+      case 'shipperName':
+      case 'shipperPhone':
+      case 'shipperEmail':
+      case 'shipperAddress':
+      case 'receiverName':
+      case 'receiverPhone':
+      case 'receiverEmail':
+      case 'receiverAddress':
       case 'cargoType':
-        if (!value) error = 'Cargo type is required';
+      case 'cargoWeight':
+      case 'cargoQuantity':
+      case 'cargoValue':
+      case 'serviceType':
+      case 'shippingClass':
+      case 'originPort':
+      case 'destinationPort':
+      case 'preferredShippingDate':
+      case 'paymentMethod':
+      case 'trackingPreference':
+        if (!value) error = 'This field is required';
+        break;
+      case 'cargoDimensions.length':
+      case 'cargoDimensions.width':
+      case 'cargoDimensions.height':
+        if (!value) error = 'This dimension is required';
+        break;
+      case 'insuranceValue':
+        if (formData.insuranceRequired && !value) {
+          error = 'Insurance value is required when insurance is selected';
+        }
         break;
       default:
         if (!value && name !== 'additionalServices') {
@@ -232,122 +246,151 @@ const BookingForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate fields before submitting
+    // Validate all fields before submitting
     const formErrors = {};
     Object.keys(formData).forEach((key) => {
-      const error = validateField(key, formData[key]);
-      if (error) formErrors[key] = error;
+      if (key === 'cargoDimensions') {
+        // Validate each dimension separately
+        Object.keys(formData.cargoDimensions).forEach(dim => {
+          const dimKey = `cargoDimensions.${dim}`;
+          const error = validateField(dimKey, formData.cargoDimensions[dim]);
+          if (error) formErrors[dimKey] = error;
+        });
+      } else if (key !== 'documents') {
+        const error = validateField(key, formData[key]);
+        if (error) formErrors[key] = error;
+      }
     });
 
-    // Only proceed if no validation errors exist
-    if (Object.keys(formErrors).length === 0 && !dateError) {
-      try {
-        // Create FormData object to handle file uploads
-        const submitData = new FormData();
-        
-        // Add all non-file data
-        Object.keys(formData).forEach(key => {
-          if (key !== 'documents') {
-            if (typeof formData[key] === 'object') {
-              submitData.append(key, JSON.stringify(formData[key]));
-            } else {
-              submitData.append(key, formData[key]);
-            }
-          }
-        });
-
-        // Add document files
-        Object.keys(formData.documents).forEach(docKey => {
-          if (formData.documents[docKey]) {
-            submitData.append(docKey, formData.documents[docKey]);
-          }
-        });
-
-        // First create the booking
-        const bookingResponse = await axios.post(
-          `${Base_URL}/api/booking/bookings`,
-          submitData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        );
-        console.log('Booking Successful:', bookingResponse.data);
-
-        // Then create Razorpay order
-        const orderResponse = await axios.post(
-          `${Base_URL}/api/payment/create-order`,
-          {
-            amount: 10000 * 100, 
-            bookingId: bookingResponse.data.data._id
-          }
-        );
-
-      
-        const options = {
-          key: process.env.REACT_APP_RAZORPAY_KEY_ID,
-          amount: orderResponse.data.order.amount,
-          currency: "INR",
-          name: "OCEANORACLE PAYMENT GATEWAY",
-          description: "Booking Payment",
-          order_id: orderResponse.data.order.id,
-          handler: async function (response) {
-            try {
-              // Verify payment
-              const verificationResponse = await axios.post(`${Base_URL}/api/payment/verify`, {
-                bookingId: bookingResponse.data.data._id,
-                paymentId: response.razorpay_payment_id,
-                orderId: response.razorpay_order_id,
-                signature: response.razorpay_signature,
-                amount: orderResponse.data.order.amount
-              });
-
-              // Generate and download bill
-              generateBill(bookingResponse.data.data, {
-                paymentId: response.razorpay_payment_id,
-                amount: orderResponse.data.order.amount
-              });
-
-              Swal.fire({
-                title: "Payment successful!",
-                text: "Booking confirmed and invoice has been downloaded",
-                icon: "success"
-              });
-              
-              navigate('/dashboard');
-            } catch (error) {
-              console.error('Payment verification failed:', error);
-              alert('Payment verification failed. Please contact support.');
-            }
-          },
-          prefill: {
-            name: formData.shipperName,
-            email: formData.shipperEmail,
-            contact: formData.shipperPhone
-          },
-          theme: {
-            color: "#3399cc"
-          }
-        };
-
-        const razorpay = new window.Razorpay(options);
-        razorpay.open();
-
-      } catch (error) {
-        console.error('Error:', error);
-        let errorMessage = 'An error occurred. Please try again.';
-        
-        if (error.response) {
-          console.error('Error data:', error.response.data);
-          errorMessage = error.response.data.message || errorMessage;
-        }
-        
-        alert(errorMessage);
-      }
-    } else {
+    // Check for validation errors
+    if (Object.keys(formErrors).length > 0) {
       console.error('Form validation errors:', formErrors);
-      alert('Please fill in all required fields correctly.');
+      
+      // Show first error to the user
+      const firstError = Object.values(formErrors)[0];
+      Swal.fire({
+        title: "Validation Error",
+        text: firstError,
+        icon: "error"
+      });
+      return;
+    }
+
+    // Validate date
+    if (dateError) {
+      Swal.fire({
+        title: "Date Error",
+        text: dateError,
+        icon: "error"
+      });
+      return;
+    }
+
+    try {
+      // Create FormData object to handle file uploads
+      const submitData = new FormData();
+      
+      // Add all non-file data
+      Object.keys(formData).forEach(key => {
+        if (key !== 'documents') {
+          if (typeof formData[key] === 'object' && !Array.isArray(formData[key])) {
+            submitData.append(key, JSON.stringify(formData[key]));
+          } else if (Array.isArray(formData[key])) {
+            submitData.append(key, JSON.stringify(formData[key]));
+          } else {
+            submitData.append(key, formData[key]);
+          }
+        }
+      });
+
+      // Add document files
+      Object.keys(formData.documents).forEach(docKey => {
+        if (formData.documents[docKey]) {
+          submitData.append(docKey, formData.documents[docKey]);
+        }
+      });
+
+      // First create the booking
+      const bookingResponse = await axios.post(
+        `${Base_URL}/api/booking/bookings`,
+        submitData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      console.log('Booking Successful:', bookingResponse.data);
+
+      // Then create Razorpay order
+      const orderResponse = await axios.post(
+        `${Base_URL}/api/payment/create-order`,
+        {
+          amount: 10000 * 100, 
+          bookingId: bookingResponse.data.data._id
+        }
+      );
+
+    
+      const options = {
+        key: process.env.REACT_APP_RAZORPAY_KEY_ID,
+        amount: orderResponse.data.order.amount,
+        currency: "INR",
+        name: "OCEANORACLE PAYMENT GATEWAY",
+        description: "Booking Payment",
+        order_id: orderResponse.data.order.id,
+        handler: async function (response) {
+          try {
+            // Verify payment
+            const verificationResponse = await axios.post(`${Base_URL}/api/payment/verify`, {
+              bookingId: bookingResponse.data.data._id,
+              paymentId: response.razorpay_payment_id,
+              orderId: response.razorpay_order_id,
+              signature: response.razorpay_signature,
+              amount: orderResponse.data.order.amount
+            });
+
+            // Generate and download bill
+            generateBill(bookingResponse.data.data, {
+              paymentId: response.razorpay_payment_id,
+              amount: orderResponse.data.order.amount
+            });
+
+            Swal.fire({
+              title: "Payment successful!",
+              text: "Booking confirmed and invoice has been downloaded",
+              icon: "success"
+            });
+            
+            navigate('/dashboard');
+          } catch (error) {
+            console.error('Payment verification failed:', error);
+            alert('Payment verification failed. Please contact support.');
+          }
+        },
+        prefill: {
+          name: formData.shipperName,
+          email: formData.shipperEmail,
+          contact: formData.shipperPhone
+        },
+        theme: {
+          color: "#3399cc"
+        }
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+
+    } catch (error) {
+      console.error('Error:', error);
+      let errorMessage = 'An error occurred. Please try again.';
+      
+      if (error.response) {
+        console.error('Error data:', error.response.data);
+        errorMessage = error.response.data.message || errorMessage;
+      }
+      
+      alert(errorMessage);
     }
   };
 

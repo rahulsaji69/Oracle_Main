@@ -14,6 +14,8 @@ const BookingSchema = new mongoose.Schema({
   receiverAddress: { type: String, required: true },
 
   // Cargo Details
+  containerType: { type: String, required: true },
+  containerSize: { type: String, required: true },
   cargoType: { type: String, required: true },
   cargoWeight: { type: Number, required: true },
   cargoDimensions: {
@@ -56,12 +58,35 @@ const BookingSchema = new mongoose.Schema({
   hsCode: { type: String },
   customsDocuments: [{ type: String }], // Array of document URLs or IDs
 
+  // Document uploads
+  documents: {
+    billOfLading: { type: String },
+    commercialInvoice: { type: String },
+    packingList: { type: String },
+    customsDocuments: { type: String },
+    certificateOfOrigin: { type: String }
+  },
+
   // Additional Services
   additionalServices: [{ type: String }],
 
   // Metadata
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
+
+  // Booking status
+  status: {
+    type: String,
+    enum: ['PENDING', 'CUSTOMS_VERIFICATION', 'CUSTOMS_APPROVED', 'CUSTOMS_REJECTED', 'CONFIRMED', 'REJECTED'],
+    default: 'PENDING'
+  },
+
+  // Customs verification status
+  customsVerificationStatus: {
+    type: String,
+    enum: ['PENDING', 'IN_PROGRESS', 'APPROVED', 'REJECTED'],
+    default: 'PENDING'
+  },
 
   paymentStatus: {
     type: String,
@@ -77,6 +102,21 @@ const BookingSchema = new mongoose.Schema({
 // Add a pre-save hook to update the 'updatedAt' field
 BookingSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
+  
+  // If the booking status is being set to CONFIRMED but hasn't gone through customs
+  if (this.isModified('status') && 
+      this.status === 'CONFIRMED' && 
+      this.customsVerificationStatus !== 'APPROVED') {
+    // Route it to customs verification instead
+    this.status = 'CUSTOMS_VERIFICATION';
+    this.customsVerificationStatus = 'IN_PROGRESS';
+  }
+  
+  // For new bookings (being created for the first time)
+  if (this.isNew && !this.customsVerificationStatus) {
+    this.customsVerificationStatus = 'PENDING';
+  }
+  
   next();
 });
 

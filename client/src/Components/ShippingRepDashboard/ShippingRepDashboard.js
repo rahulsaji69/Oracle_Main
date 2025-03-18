@@ -55,10 +55,14 @@ const ShippingRepDashboard = () => {
   // Updated function to handle booking status updates
   const handleBookingConfirmation = async (bookingId, newStatus) => {
     try {
+      console.log(`Updating booking ${bookingId} to status ${newStatus}`);
+      
       // Make PUT request to update booking status
-      await axios.put(`${Base_URL}/api/booking/bookings/${bookingId}`, {
+      const response = await axios.put(`${Base_URL}/api/booking/bookings/${bookingId}`, {
         status: newStatus
       });
+      
+      console.log('Update response:', response.data);
 
       toast.success(`Booking ${newStatus.toLowerCase()} successfully`);
       fetchData(); // Refresh the data
@@ -171,19 +175,34 @@ const ShippingRepDashboard = () => {
                         <span className={`srep-status-badge srep-status-${(booking.status || 'pending').toLowerCase()}`}>
                           {booking.status || 'PENDING'}
                         </span>
+                        {booking.status === 'CUSTOMS_VERIFICATION' && (
+                          <span className="srep-status-badge srep-status-customs">
+                            In Customs
+                          </span>
+                        )}
+                        {booking.status === 'CUSTOMS_APPROVED' && (
+                          <span className="srep-status-badge srep-status-approved">
+                            Customs Approved
+                          </span>
+                        )}
+                        {booking.status === 'CUSTOMS_REJECTED' && (
+                          <span className="srep-status-badge srep-status-rejected">
+                            Customs Rejected
+                          </span>
+                        )}
                       </td>
                       <td className="srep-td srep-action-buttons">
                         <button 
                           className="srep-btn srep-btn-confirm"
                           onClick={() => handleBookingConfirmation(booking._id, 'CONFIRMED')}
-                          disabled={booking.status === 'CONFIRMED'}
+                          disabled={booking.status === 'CONFIRMED' || booking.status === 'CUSTOMS_VERIFICATION' || booking.status === 'CUSTOMS_REJECTED'}
                         >
                           Confirm
                         </button>
                         <button 
                           className="srep-btn srep-btn-reject"
                           onClick={() => handleBookingConfirmation(booking._id, 'REJECTED')}
-                          disabled={booking.status === 'REJECTED'}
+                          disabled={booking.status === 'REJECTED' || booking.status === 'CONFIRMED'}
                         >
                           Reject
                         </button>
