@@ -24,6 +24,7 @@ import {
   Schedule,
   BookOnline,
   ExitToApp,
+  BarChart,
 } from "@mui/icons-material";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -102,6 +103,7 @@ const AppLayout = () => {
     { text: "Ships", icon: <DirectionsBoat />, path: "/admin-dashboard/ships" },
     { text: "Schedules", icon: <Schedule />, path: "/admin-dashboard/schedules" },
     { text: "Bookings", icon: <BookOnline />, path: "/admin-dashboard/bookings" },
+    { text: "Analytics", icon: <BarChart />, path: "/admin-dashboard/analytics" },
   ];
 
   if (!isAuthenticated) {

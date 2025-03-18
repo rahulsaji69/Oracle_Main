@@ -10,6 +10,7 @@ import DirectionsBoatIcon from '@mui/icons-material/DirectionsBoat';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import PeopleIcon from '@mui/icons-material/People';
 import BookOnlineIcon from '@mui/icons-material/BookOnline';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import './AdminDash.css';
 
 const AdminDash = () => {
@@ -20,6 +21,7 @@ const AdminDash = () => {
     { title: 'Schedules', icon: <ScheduleIcon />, path: '/admin-dashboard/schedules' },
     { title: 'Users', icon: <PeopleIcon />, path: '/admin-dashboard/users' },
     { title: 'Bookings', icon: <BookOnlineIcon />, path: '/admin-dashboard/bookings' },
+    { title: 'Analytics', icon: <BarChartIcon />, path: '/admin-dashboard/analytics' },
   ];
 
   const handleItemClick = (path) => {

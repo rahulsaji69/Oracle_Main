@@ -20,6 +20,7 @@ import BookingPage from "./Pages/AdminPages/BookingPage";
 import ShipRep from "./Pages/ShipRep";
 import Customs from "./Pages/Customs"; 
 import Support from "./Pages/Support";
+import Analytics from "./Pages/AdminPages/Analytics";
 
 function App() {
   return (
@@ -46,6 +47,7 @@ function App() {
             <Route path="/admin-dashboard/schedules" element={<ScheduledShips />} />
             <Route path="/admin-dashboard/users" element={<UsersList />} />
             <Route path="/admin-dashboard/bookings" element={<BookingPage/>} />
+            <Route path="/admin-dashboard/analytics" element={<Analytics />} />
           </Route>
         </Routes>
       </Router>
