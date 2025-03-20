@@ -287,51 +287,50 @@ const BookingForm = () => {
     }
 
     try {
-      // Create FormData object to handle file uploads
-      const submitData = new FormData();
+      // Create FormData for file uploads
+      const bookingFormData = new FormData();
       
-      // Add all non-file data
+      // Add all regular form fields
       Object.keys(formData).forEach(key => {
-        if (key !== 'documents') {
-          if (typeof formData[key] === 'object' && !Array.isArray(formData[key])) {
-            submitData.append(key, JSON.stringify(formData[key]));
-          } else if (Array.isArray(formData[key])) {
-            submitData.append(key, JSON.stringify(formData[key]));
-          } else {
-            submitData.append(key, formData[key]);
-          }
+        if (key !== 'documents' && key !== 'cargoDimensions') {
+          bookingFormData.append(key, formData[key]);
         }
       });
-
+      
+      // Add cargo dimensions
+      bookingFormData.append('cargoDimensions', JSON.stringify(formData.cargoDimensions));
+      
       // Add document files
-      Object.keys(formData.documents).forEach(docKey => {
-        if (formData.documents[docKey]) {
-          submitData.append(docKey, formData.documents[docKey]);
+      Object.keys(formData.documents).forEach(docType => {
+        if (formData.documents[docType]) {
+          bookingFormData.append(`documents.${docType}`, formData.documents[docType]);
         }
       });
-
-      // First create the booking
-      const bookingResponse = await axios.post(
-        `${Base_URL}/api/booking/bookings`,
-        submitData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
+      
+      // Log form data for debugging (optional)
+      console.log('Making API call to:', `${Base_URL}/api/booking/bookings`);
+      // FormData can't be easily logged, so we skip logging the actual data
+      
+      // Make the API call with FormData
+      const response = await axios.post(`${Base_URL}/api/booking/bookings`, bookingFormData, {
+        timeout: 15000, // 15 seconds timeout
+        headers: {
+          'Content-Type': 'multipart/form-data'
         }
-      );
-      console.log('Booking Successful:', bookingResponse.data);
-
+      });
+      
+      console.log('Booking Successful:', response.data);
+      
+      // Continue with Razorpay order creation
       // Then create Razorpay order
       const orderResponse = await axios.post(
         `${Base_URL}/api/payment/create-order`,
         {
           amount: 10000 * 100, 
-          bookingId: bookingResponse.data.booking._id
+          bookingId: response.data.booking._id
         }
       );
 
-    
       const options = {
         key: process.env.REACT_APP_RAZORPAY_KEY_ID,
         amount: orderResponse.data.order.amount,
@@ -339,20 +338,20 @@ const BookingForm = () => {
         name: "OCEANORACLE PAYMENT GATEWAY",
         description: "Booking Payment",
         order_id: orderResponse.data.order.id,
-        handler: async function (response) {
+        handler: async function (razorpayResponse) {
           try {
             // Verify payment
             const verificationResponse = await axios.post(`${Base_URL}/api/payment/verify`, {
-              bookingId: bookingResponse.data.booking._id,
-              paymentId: response.razorpay_payment_id,
-              orderId: response.razorpay_order_id,
-              signature: response.razorpay_signature,
+              bookingId: response.data.booking._id,
+              paymentId: razorpayResponse.razorpay_payment_id,
+              orderId: razorpayResponse.razorpay_order_id,
+              signature: razorpayResponse.razorpay_signature,
               amount: orderResponse.data.order.amount
             });
 
             // Generate and download bill
-            generateBill(bookingResponse.data.booking, {
-              paymentId: response.razorpay_payment_id,
+            generateBill(response.data.booking, {
+              paymentId: razorpayResponse.razorpay_payment_id,
               amount: orderResponse.data.order.amount
             });
 
@@ -365,7 +364,11 @@ const BookingForm = () => {
             navigate('/dashboard');
           } catch (error) {
             console.error('Payment verification failed:', error);
-            alert('Payment verification failed. Please contact support.');
+            Swal.fire({
+              title: "Payment Error",
+              text: "Payment verification failed. Please contact support.",
+              icon: "error"
+            });
           }
         },
         prefill: {

@@ -2,18 +2,107 @@ import React, { useState, useEffect } from 'react';
 import './ShippingRepDashboard.css';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 const ShippingRepDashboard = () => {
   const [activeTab, setActiveTab] = useState('vessels');
   const [vessels, setVessels] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [userInfo, setUserInfo] = useState({
+    name: '',
+    email: '',
+  });
 
+  const navigate = useNavigate();
   const Base_URL = process.env.REACT_APP_BASE_URL;
 
   useEffect(() => {
+    // Check if user is logged in
+    checkAuthStatus();
+    
+    // Add event listeners for focus/blur
+    window.addEventListener('focus', handleWindowFocus);
+    window.addEventListener('blur', handleWindowBlur);
+    
+    // Prevent back navigation
+    window.history.pushState(null, null, window.location.pathname);
+    window.addEventListener('popstate', preventBackNavigation);
+    
+    // Clean up event listeners
+    return () => {
+      window.removeEventListener('focus', handleWindowFocus);
+      window.removeEventListener('blur', handleWindowBlur);
+      window.removeEventListener('popstate', preventBackNavigation);
+    };
+  }, []);
+  
+  useEffect(() => {
     fetchData();
   }, [activeTab]);
+
+  const checkAuthStatus = () => {
+    const token = localStorage.getItem('token');
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    
+    if (!token) {
+      logout();
+      return;
+    }
+    
+    // Fix: Make role checking more flexible to handle different role naming conventions
+    const userRole = userData.role || '';
+    const isShippingRep = userRole.toLowerCase().includes('shipping') || 
+                          userRole === 'shipping_rep' || 
+                          userRole === 'shippingrep' ||
+                          userRole === 'shipping_representative';
+    
+    if (!isShippingRep) {
+      console.log('User role validation failed:', userRole);
+      // Don't automatically logout - either redirect or show message
+      // logout(); - removing this immediate logout
+      
+      // Instead, set a warning message
+      setUserInfo({
+        name: userData.name || 'User',
+        email: userData.email || '',
+        warning: 'Warning: You may not have proper permissions for this dashboard'
+      });
+      return;
+    }
+    
+    setUserInfo({
+      name: userData.name || 'Shipping Representative',
+      email: userData.email || '',
+      warning: ''
+    });
+  };
+  
+  const handleWindowFocus = () => {
+    // Verify authentication when window gains focus
+    checkAuthStatus();
+  };
+  
+  const handleWindowBlur = () => {
+    // Optional: You could implement additional security measures here
+  };
+  
+  const preventBackNavigation = (e) => {
+    // Prevent back button navigation
+    window.history.pushState(null, null, window.location.pathname);
+  };
+
+  const logout = () => {
+    // Clear all authentication data
+    localStorage.removeItem('token');
+    localStorage.removeItem('userData');
+    sessionStorage.clear();
+    
+    // Redirect to login page
+    navigate('/login');
+    
+    toast.info('You have been logged out');
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -83,7 +172,21 @@ const ShippingRepDashboard = () => {
 
   return (
     <div className="srep-dashboard">
-      <h1 className="srep-title">Shipping Line Representative Dashboard</h1>
+      <div className="srep-header">
+        <h1 className="srep-title">Shipping Line Representative Dashboard</h1>
+        <div className="srep-user-info">
+          <div className="srep-user-details">
+            <span className="srep-user-name">{userInfo.name}</span>
+            <span className="srep-user-email">{userInfo.email}</span>
+          </div>
+          <button 
+            className="srep-logout-btn"
+            onClick={logout}
+          >
+            Logout
+          </button>
+        </div>
+      </div>
       
       <div className="srep-tabs">
         <button 

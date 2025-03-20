@@ -265,4 +265,95 @@
     overflow-x: auto;
     white-space: nowrap;
   }
-} 
+}
+
+.srep-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.srep-user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.srep-user-details {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+}
+
+.srep-user-name {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.srep-user-email {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.srep-logout-btn {
+  background-color: #f44336;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.srep-logout-btn:hover {
+  background-color: #d32f2f;
+}
+
+/* Enhance existing styles for a more polished dashboard */
+.srep-dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.srep-title {
+  margin-top: 0;
+  color: #2c3e50;
+}
+
+.srep-tabs {
+  margin-bottom: 20px;
+}
+
+.srep-tab, .srep-tab-active {
+  padding: 10px 20px;
+  margin-right: 10px;
+  border: none;
+  border-radius: 4px 4px 0 0;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.srep-tab {
+  background-color: #e0e0e0;
+}
+
+.srep-tab-active {
+  background-color: #3498db;
+  color: white;
+}
+
+.srep-loading {
+  text-align: center;
+  padding: 20px;
+  font-style: italic;
+  color: #666;
+}

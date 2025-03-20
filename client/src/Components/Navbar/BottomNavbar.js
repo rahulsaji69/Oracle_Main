@@ -39,7 +39,7 @@ const BottomNavbar = ({ value, setValue }) => {
         />
         <BottomNavigationAction 
           component={Link} 
-          to="/booking" 
+          to="/ebookings" 
           label="Book" 
           icon={<ConfirmationNumberIcon />} 
         />

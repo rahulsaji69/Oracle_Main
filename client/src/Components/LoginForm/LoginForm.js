@@ -126,7 +126,7 @@ const LoginForm = () => {
           <Button
             variant="contained"
             startIcon={<ConfirmationNumberIcon />}
-            onClick={() => navigate("/booking")}
+            onClick={() => navigate("/ebookings")}
             className="booking-button"
           >
             Book Now

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './CustomsAgent.css';
-import { FaCheckCircle, FaTimesCircle, FaExclamationCircle, FaDownload, FaEye, FaTimes } from 'react-icons/fa';
+import { FaCheckCircle, FaTimesCircle, FaExclamationCircle, FaDownload, FaEye, FaTimes, FaSignOutAlt, FaClipboardList, FaUserTie } from 'react-icons/fa';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
@@ -260,243 +260,276 @@ const CustomsAgent = () => {
     });
   };
 
+  const handleLogout = () => {
+    // In a real application, this would clear authentication tokens/cookies
+    localStorage.removeItem('authToken');
+    // Redirect to login page
+    window.location.href = '/login';
+  };
+
   return (
     <div className="customs-agent-container">
-      <div className="dashboard-header">
-        <h2>Customs Document Review Dashboard</h2>
-        <div className="pending-count">
-          Pending Reviews: {pendingShipments.length}
+      <div className="dashboard-sidebar">
+        <div className="sidebar-header">
+          <FaUserTie className="agent-icon" />
+          <h2>Customs Portal</h2>
+        </div>
+        <div className="sidebar-menu">
+          <div className="menu-item active">
+            <FaClipboardList />
+            <span>Document Review</span>
+          </div>
+        </div>
+        <div className="sidebar-footer">
+          <button className="logout-button" onClick={handleLogout}>
+            <FaSignOutAlt /> Logout
+          </button>
         </div>
       </div>
-
-      {loading ? (
-        <div className="loading">Loading shipments...</div>
-      ) : (
-        <>
-          {/* Pending Shipments List */}
-          <div className="pending-shipments-section">
-            <h3>Pending Document Reviews</h3>
-            <div className="shipments-grid">
-              {pendingShipments.map(shipment => (
-                <div 
-                  key={shipment.id} 
-                  className={`shipment-card ${selectedShipment?.id === shipment.id ? 'selected' : ''}`}
-                  onClick={() => setSelectedShipment(shipment)}
-                >
-                  <div className="shipment-header">
-                    <span className={`priority-badge ${shipment.priority.toLowerCase()}`}>
-                      {shipment.priority}
-                    </span>
-                    <span className="shipment-id">{shipment.id}</span>
-                  </div>
-                  <div className="shipment-details">
-                    <p><strong>Customer:</strong> {shipment.customer}</p>
-                    <p><strong>Submitted:</strong> {shipment.submissionDate}</p>
-                    <p><strong>Status:</strong> {shipment.status}</p>
-                  </div>
-                </div>
-              ))}
-              
-              {pendingShipments.length === 0 && (
-                <div className="no-shipments">
-                  No shipments pending customs review
-                </div>
-              )}
+      
+      <div className="dashboard-main">
+        <div className="dashboard-header">
+          <h2>Customs Document Review Dashboard</h2>
+          <div className="header-actions">
+            <div className="pending-count">
+              Pending Reviews: {pendingShipments.length}
+            </div>
+            <div className="agent-profile">
+              <span className="agent-name">Agent Smith</span>
+              <div className="agent-avatar"></div>
             </div>
           </div>
+        </div>
 
-          {/* Document Review Section */}
-          {selectedShipment && (
-            <div className="document-review-section">
-              <h3>Document Review for Shipment {selectedShipment.id}</h3>
-              
-              <div className="documents-grid">
-                {Object.entries(documentReview).map(([docType, details]) => (
-                  <div key={docType} className="document-review-card">
-                    <div className="document-header">
-                      <h4>{docType.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</h4>
-                      {getStatusIcon(details.status)}
+        {loading ? (
+          <div className="loading">Loading shipments...</div>
+        ) : (
+          <>
+            {/* Pending Shipments List */}
+            <div className="pending-shipments-section">
+              <h3>Pending Document Reviews</h3>
+              <div className="shipments-grid">
+                {pendingShipments.map(shipment => (
+                  <div 
+                    key={shipment.id} 
+                    className={`shipment-card ${selectedShipment?.id === shipment.id ? 'selected' : ''}`}
+                    onClick={() => setSelectedShipment(shipment)}
+                  >
+                    <div className="shipment-header">
+                      <span className={`priority-badge ${shipment.priority.toLowerCase()}`}>
+                        {shipment.priority}
+                      </span>
+                      <span className="shipment-id">{shipment.id}</span>
                     </div>
-                    
-                    <div className="document-actions">
-                      <button 
-                        className="action-button view"
-                        onClick={() => handleViewDocument(docType)}
-                      >
-                        <FaEye /> View Document
-                      </button>
-                      <button 
-                        className="action-button download"
-                        onClick={() => handleDownloadDocument(docType)}
-                      >
-                        <FaDownload /> Download
-                      </button>
-                    </div>
-
-                    <div className="verification-controls">
-                      <button 
-                        className="verify-button"
-                        onClick={() => handleDocumentVerification(docType)}
-                      >
-                        Verify
-                      </button>
-                      <button 
-                        className="reject-button"
-                        onClick={() => handleDocumentRejection(docType)}
-                      >
-                        Reject
-                      </button>
-                    </div>
-
-                    <div className="review-notes">
-                      <textarea
-                        placeholder="Add review comments..."
-                        value={details.comments}
-                        onChange={(e) => setDocumentReview(prev => ({
-                          ...prev,
-                          [docType]: {
-                            ...prev[docType],
-                            comments: e.target.value
-                          }
-                        }))}
-                      />
-                    </div>
-
-                    <div className="verification-status">
-                      {details.lastChecked && (
-                        <p className="last-checked">
-                          Last checked: {new Date(details.lastChecked).toLocaleString()}
-                        </p>
-                      )}
+                    <div className="shipment-details">
+                      <p><strong>Customer:</strong> {shipment.customer}</p>
+                      <p><strong>Submitted:</strong> {shipment.submissionDate}</p>
+                      <p><strong>Status:</strong> {shipment.status}</p>
                     </div>
                   </div>
                 ))}
-              </div>
-
-              <div className="review-summary">
-                <h4>Review Summary</h4>
-                <div className="summary-stats">
-                  <div className="stat">
-                    <span>Verified:</span>
-                    <span>{Object.values(documentReview).filter(doc => doc.status === 'verified').length}</span>
+                
+                {pendingShipments.length === 0 && (
+                  <div className="no-shipments">
+                    No shipments pending customs review
                   </div>
-                  <div className="stat">
-                    <span>Pending:</span>
-                    <span>{Object.values(documentReview).filter(doc => doc.status === 'pending').length}</span>
-                  </div>
-                  <div className="stat">
-                    <span>Rejected:</span>
-                    <span>{Object.values(documentReview).filter(doc => doc.status === 'rejected').length}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="final-decision">
-                <button 
-                  className="approve-clearance"
-                  onClick={handleApproveForClearance}
-                  disabled={Object.values(documentReview).some(doc => doc.status === 'pending' || doc.status === 'rejected')}
-                >
-                  Approve for Clearance
-                </button>
-                <button 
-                  className="request-additional"
-                  onClick={() => setRequestingAdditional(true)}
-                >
-                  Request Additional Documents
-                </button>
+                )}
               </div>
             </div>
-          )}
 
-          {/* Document Viewer Modal */}
-          {viewingDocument && (
-            <div className="document-viewer-overlay">
-              <div className="document-viewer-modal">
-                <div className="document-viewer-header">
-                  <h3>{viewingDocument.type.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</h3>
-                  <button 
-                    className="close-button"
-                    onClick={() => setViewingDocument(null)}
-                  >
-                    <FaTimes />
-                  </button>
-                </div>
-                <div className="document-viewer-content">
-                  <iframe 
-                    src={viewingDocument.url} 
-                    title={viewingDocument.type}
-                    width="100%"
-                    height="500px"
-                  ></iframe>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Request Additional Documents Modal */}
-          {requestingAdditional && (
-            <div className="request-documents-overlay">
-              <div className="request-documents-modal">
-                <div className="request-documents-header">
-                  <h3>Request Additional Documents</h3>
-                  <button 
-                    className="close-button"
-                    onClick={() => setRequestingAdditional(false)}
-                  >
-                    <FaTimes />
-                  </button>
-                </div>
-                <div className="request-documents-content">
-                  <div className="document-checkboxes">
-                    <h4>Select Documents to Request:</h4>
-                    {Object.keys(documentReview).map(docType => (
-                      <div key={docType} className="document-checkbox">
-                        <input 
-                          type="checkbox"
-                          id={`request-${docType}`}
-                          checked={additionalRequest.requestedDocuments.includes(docType)}
-                          onChange={() => toggleDocumentRequest(docType)}
-                        />
-                        <label htmlFor={`request-${docType}`}>
-                          {docType.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                        </label>
+            {/* Document Review Section */}
+            {selectedShipment && (
+              <div className="document-review-section">
+                <h3>Document Review for Shipment {selectedShipment.id}</h3>
+                
+                <div className="documents-grid">
+                  {Object.entries(documentReview).map(([docType, details]) => (
+                    <div key={docType} className="document-review-card">
+                      <div className="document-header">
+                        <h4>{docType.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</h4>
+                        {getStatusIcon(details.status)}
                       </div>
-                    ))}
+                      
+                      <div className="document-actions">
+                        <button 
+                          className="action-button view"
+                          onClick={() => handleViewDocument(docType)}
+                        >
+                          <FaEye /> View Document
+                        </button>
+                        <button 
+                          className="action-button download"
+                          onClick={() => handleDownloadDocument(docType)}
+                        >
+                          <FaDownload /> Download
+                        </button>
+                      </div>
+
+                      <div className="verification-controls">
+                        <button 
+                          className="verify-button"
+                          onClick={() => handleDocumentVerification(docType)}
+                        >
+                          Verify
+                        </button>
+                        <button 
+                          className="reject-button"
+                          onClick={() => handleDocumentRejection(docType)}
+                        >
+                          Reject
+                        </button>
+                      </div>
+
+                      <div className="review-notes">
+                        <textarea
+                          placeholder="Add review comments..."
+                          value={details.comments}
+                          onChange={(e) => setDocumentReview(prev => ({
+                            ...prev,
+                            [docType]: {
+                              ...prev[docType],
+                              comments: e.target.value
+                            }
+                          }))}
+                        />
+                      </div>
+
+                      <div className="verification-status">
+                        {details.lastChecked && (
+                          <p className="last-checked">
+                            Last checked: {new Date(details.lastChecked).toLocaleString()}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="review-summary">
+                  <h4>Review Summary</h4>
+                  <div className="summary-stats">
+                    <div className="stat">
+                      <span>Verified:</span>
+                      <span>{Object.values(documentReview).filter(doc => doc.status === 'verified').length}</span>
+                    </div>
+                    <div className="stat">
+                      <span>Pending:</span>
+                      <span>{Object.values(documentReview).filter(doc => doc.status === 'pending').length}</span>
+                    </div>
+                    <div className="stat">
+                      <span>Rejected:</span>
+                      <span>{Object.values(documentReview).filter(doc => doc.status === 'rejected').length}</span>
+                    </div>
                   </div>
-                  <div className="message-to-shipper">
-                    <h4>Message to Shipper:</h4>
-                    <textarea
-                      value={additionalRequest.message}
-                      onChange={(e) => setAdditionalRequest(prev => ({
-                        ...prev,
-                        message: e.target.value
-                      }))}
-                      placeholder="Explain why you need additional documentation..."
-                      rows="5"
-                    ></textarea>
-                  </div>
-                  <div className="request-documents-actions">
+                </div>
+
+                <div className="final-decision">
+                  <button 
+                    className="approve-clearance"
+                    onClick={handleApproveForClearance}
+                    disabled={Object.values(documentReview).some(doc => doc.status === 'pending' || doc.status === 'rejected')}
+                  >
+                    Approve for Clearance
+                  </button>
+                  <button 
+                    className="request-additional"
+                    onClick={() => setRequestingAdditional(true)}
+                  >
+                    Request Additional Documents
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Document Viewer Modal */}
+            {viewingDocument && (
+              <div className="document-viewer-overlay">
+                <div className="document-viewer-modal">
+                  <div className="document-viewer-header">
+                    <h3>{viewingDocument.type.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</h3>
                     <button 
-                      className="cancel-button"
+                      className="close-button"
+                      onClick={() => setViewingDocument(null)}
+                    >
+                      <FaTimes />
+                    </button>
+                  </div>
+                  <div className="document-viewer-content">
+                    <iframe 
+                      src={viewingDocument.url} 
+                      title={viewingDocument.type}
+                      width="100%"
+                      height="500px"
+                    ></iframe>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Request Additional Documents Modal */}
+            {requestingAdditional && (
+              <div className="request-documents-overlay">
+                <div className="request-documents-modal">
+                  <div className="request-documents-header">
+                    <h3>Request Additional Documents</h3>
+                    <button 
+                      className="close-button"
                       onClick={() => setRequestingAdditional(false)}
                     >
-                      Cancel
+                      <FaTimes />
                     </button>
-                    <button 
-                      className="send-request-button"
-                      onClick={handleRequestAdditional}
-                      disabled={!additionalRequest.message || additionalRequest.requestedDocuments.length === 0}
-                    >
-                      Send Request
-                    </button>
+                  </div>
+                  <div className="request-documents-content">
+                    <div className="document-checkboxes">
+                      <h4>Select Documents to Request:</h4>
+                      {Object.keys(documentReview).map(docType => (
+                        <div key={docType} className="document-checkbox">
+                          <input 
+                            type="checkbox"
+                            id={`request-${docType}`}
+                            checked={additionalRequest.requestedDocuments.includes(docType)}
+                            onChange={() => toggleDocumentRequest(docType)}
+                          />
+                          <label htmlFor={`request-${docType}`}>
+                            {docType.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="message-to-shipper">
+                      <h4>Message to Shipper:</h4>
+                      <textarea
+                        value={additionalRequest.message}
+                        onChange={(e) => setAdditionalRequest(prev => ({
+                          ...prev,
+                          message: e.target.value
+                        }))}
+                        placeholder="Explain why you need additional documentation..."
+                        rows="5"
+                      ></textarea>
+                    </div>
+                    <div className="request-documents-actions">
+                      <button 
+                        className="cancel-button"
+                        onClick={() => setRequestingAdditional(false)}
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        className="send-request-button"
+                        onClick={handleRequestAdditional}
+                        disabled={!additionalRequest.message || additionalRequest.requestedDocuments.length === 0}
+                      >
+                        Send Request
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-        </>
-      )}
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };
