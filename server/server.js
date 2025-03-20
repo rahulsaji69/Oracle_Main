@@ -7,12 +7,27 @@ const indexRoutes = require("./Routes/indexRoutes");
 const paymentRoutes = require('./Routes/paymentRoutes');
 const supportRoutes = require('./Routes/supportRoutes');
 const carbonEmissionsRoutes = require('./Routes/carbonEmissionsRoutes');
+const multer = require('multer');
 dotenv.config();
 
 const app = express();
 
-app.use(express.json());
-app.use(cors());
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, 'uploads'))
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname)
+  }
+})
+const upload = multer({ storage: storage });
+
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  credentials: true
+}));
 
 // Serve static files from the uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
