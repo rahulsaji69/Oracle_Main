@@ -4,6 +4,8 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./UserDashboard.css";
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaYoutube, FaTruck, FaCalendarAlt, FaBoxOpen, FaUserCog, FaCheckCircle, FaMapMarkerAlt, FaClock, FaRoute, FaHistory, FaEye, FaFileAlt, FaFileInvoice, FaFileContract, FaHome, FaBook, FaShip, FaTruckLoading, FaUser, FaPhone, FaEnvelope, FaMapMarker } from 'react-icons/fa';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 import { 
   Drawer, 
@@ -452,6 +454,196 @@ const Dashboard = () => {
     </div>
   );
 
+  // Generate receipt PDF for a booking
+  const generateReceiptPDF = (booking) => {
+    const doc = new jsPDF();
+    
+    // Add company logo placeholder (this would be replaced with actual logo image)
+    doc.setDrawColor(15, 55, 95); // Navy blue
+    doc.setFillColor(15, 55, 95);
+    doc.rect(20, 10, 30, 15, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text('ORACLE', 24, 18);
+    doc.text('SHIPPING', 24, 22);
+    
+    // Reset text color
+    doc.setTextColor(0, 0, 0);
+    
+    // Add receipt title with styled background
+    doc.setFillColor(240, 240, 240);
+    doc.rect(0, 30, 210, 12, 'F');
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text('OFFICIAL PAYMENT RECEIPT', 105, 38, { align: 'center' });
+    
+    // Add reference number section with styling
+    doc.setFillColor(245, 245, 245);
+    doc.rect(140, 45, 50, 10, 'F');
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text('BOOKING ID', 142, 51);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text(booking.id || 'N/A', 142, 58);
+    
+    // Add date
+    doc.setFillColor(245, 245, 245);
+    doc.rect(140, 60, 50, 10, 'F');
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text('DATE ISSUED', 142, 66);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text(new Date().toLocaleDateString(), 142, 73);
+    
+    // Add shipping information section
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text('SHIPPING INFORMATION', 20, 60);
+    
+    // Shipping route with badge
+    doc.setDrawColor(200, 200, 200);
+    doc.setFillColor(250, 250, 250);
+    doc.roundedRect(20, 65, 110, 40, 2, 2, 'FD');
+    
+    // Add route details
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text('ROUTE', 25, 75);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`Origin: ${booking.origin}`, 25, 85);
+    doc.text(`Destination: ${booking.destination}`, 25, 95);
+    
+    // Add cargo details
+    doc.setFontSize(11); 
+    doc.setFont("helvetica", "bold");
+    doc.text('CARGO DETAILS', 25, 110);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`Type: ${booking.cargoType}`, 25, 120);
+    
+    // Status badge
+    doc.setDrawColor(0, 100, 0);
+    doc.setFillColor(230, 250, 230);
+    doc.roundedRect(25, 130, 70, 15, 2, 2, 'FD');
+    doc.setTextColor(0, 100, 0);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text(`STATUS: ${booking.status.toUpperCase()}`, 60, 139, { align: 'center' });
+    doc.setTextColor(0, 0, 0);
+    
+    // Vessel information
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text('VESSEL INFORMATION', 20, 160);
+    
+    // Create a styled table for vessel details
+    doc.autoTable({
+      startY: 165,
+      head: [['Details', 'Value']],
+      body: [
+        ['Vessel Name', booking.vessel || 'N/A'],
+        ['Container ID', booking.containerId || 'N/A'],
+        ['Estimated Arrival', new Date(booking.eta).toLocaleDateString()]
+      ],
+      theme: 'grid',
+      headStyles: { 
+        fillColor: [15, 55, 95], 
+        textColor: [255, 255, 255],
+        fontStyle: 'bold'
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245]
+      },
+      margin: { left: 20, right: 20 }
+    });
+    
+    // Add payment details section title
+    const tableEnd = doc.previousAutoTable.finalY + 15;
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text('PAYMENT DETAILS', 20, tableEnd);
+    
+    // Calculate payment amount based on cargo type
+    const baseAmount = booking.cargoType === 'General Cargo' ? 5000 : 
+                       booking.cargoType === 'Electronics' ? 8500 : 
+                       booking.cargoType === 'Chemicals' ? 7200 : 6000;
+    
+    const tax = baseAmount * 0.18; // 18% GST
+    const total = baseAmount + tax;
+    
+    // Create payment details table
+    doc.autoTable({
+      startY: tableEnd + 5,
+      head: [['Description', 'Amount (₹)']],
+      body: [
+        ['Shipping Charges', baseAmount.toFixed(2)],
+        ['GST (18%)', tax.toFixed(2)],
+        ['Insurance', '0.00'],
+        ['Additional Services', '0.00']
+      ],
+      foot: [['Total Amount', total.toFixed(2)]],
+      theme: 'grid',
+      headStyles: { 
+        fillColor: [15, 55, 95], 
+        textColor: [255, 255, 255],
+        fontStyle: 'bold'
+      },
+      footStyles: { 
+        fillColor: [240, 240, 240], 
+        textColor: [15, 55, 95], 
+        fontStyle: 'bold' 
+      },
+      margin: { left: 20, right: 20 }
+    });
+    
+    // Add payment method and transaction details
+    const paymentTableEnd = doc.previousAutoTable.finalY + 10;
+    
+    // Payment details in a box
+    doc.setDrawColor(200, 200, 200);
+    doc.setFillColor(250, 250, 250);
+    doc.roundedRect(20, paymentTableEnd, 170, 30, 2, 2, 'FD');
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text('Payment Method:', 30, paymentTableEnd + 10);
+    doc.setFont("helvetica", "normal");
+    doc.text('Razorpay', 80, paymentTableEnd + 10);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text('Payment Date:', 30, paymentTableEnd + 20);
+    doc.setFont("helvetica", "normal");
+    doc.text(new Date(booking.date).toLocaleDateString(), 80, paymentTableEnd + 20);
+    
+    // Add authorization statement
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(8);
+    doc.text('This is an electronically generated receipt and does not require a signature.', 105, paymentTableEnd + 35, { align: 'center' });
+    
+    // Add footer with contact information
+    doc.setDrawColor(15, 55, 95);
+    doc.setFillColor(15, 55, 95);
+    doc.rect(0, 272, 210, 25, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text('Oracle Shipping Ltd.', 105, 280, { align: 'center' });
+    
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.text('123 Port Avenue, Mumbai, India | support@oracleshipping.com | +91 12345 67890', 105, 287, { align: 'center' });
+    doc.text('Thank you for choosing Oracle Shipping - Your Eco-Friendly Shipping Partner', 105, 292, { align: 'center' });
+    
+    // Save the PDF with improved naming
+    const cleanDate = new Date().toISOString().split('T')[0];
+    doc.save(`Oracle-Payment-Receipt-${booking.id}-${cleanDate}.pdf`);
+  };
+
   return (
     <div className="dashboard-container">
       <ToastContainer />
@@ -566,7 +758,13 @@ const Dashboard = () => {
                 />
                 <button
                   className="search-button"
-                  onClick={() => navigate(`/shipschedules?from=${fromPort}&to=${toPort}&date=${date}`)}
+                  onClick={() => navigate('/ebookings', { 
+                    state: { 
+                      originPort: fromPort, 
+                      destinationPort: toPort, 
+                      preferredShippingDate: date 
+                    }
+                  })}
                 >
                   Search
                 </button>
@@ -1155,7 +1353,53 @@ const Dashboard = () => {
                     <ListItemIcon><FaFileContract /></ListItemIcon>
                     <ListItemText primary="Packing List" secondary="View | Download" />
                   </ListItem>
+                  <ListItem>
+                    <ListItemIcon><FaFileInvoice /></ListItemIcon>
+                    <ListItemText 
+                      primary="Payment Receipt" 
+                      secondary={
+                        <span 
+                          style={{cursor: 'pointer', color: '#1976d2'}} 
+                          onClick={() => generateReceiptPDF(selectedBooking)}
+                        >
+                          Download Receipt
+                        </span>
+                      } 
+                    />
+                  </ListItem>
                 </List>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="h6" gutterBottom>Payment Information</Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="subtitle2" color="textSecondary">Payment Status</Typography>
+                    <Typography variant="body1" gutterBottom>
+                      <span className="status-badge status-completed">Paid</span>
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="subtitle2" color="textSecondary">Payment Method</Typography>
+                    <Typography variant="body1" gutterBottom>Razorpay</Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="subtitle2" color="textSecondary">Payment Date</Typography>
+                    <Typography variant="body1" gutterBottom>{new Date(selectedBooking.date).toLocaleDateString()}</Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Button 
+                      variant="contained" 
+                      startIcon={<FaFileInvoice />}
+                      onClick={() => generateReceiptPDF(selectedBooking)}
+                      color="primary"
+                      size="small"
+                    >
+                      Download Receipt
+                    </Button>
+                  </Grid>
+                </Grid>
               </Grid>
             </Grid>
           )}

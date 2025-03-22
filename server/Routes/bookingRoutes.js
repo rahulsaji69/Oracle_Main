@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const bookingController = require('../Controllers/bookingController');
 
+// Add create booking route that matches the client endpoint
+router.post('/create', bookingController.createBooking);
+
 router.post('/bookings', bookingController.createBooking);
 
 router.get('/bookings', bookingController.getAllBookings);

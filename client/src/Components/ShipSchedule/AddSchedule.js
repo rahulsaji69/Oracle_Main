@@ -47,11 +47,22 @@ const AddSchedule = ({ open, onClose, onScheduleAdded }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${Base_URL}/api/ships/schedules`, scheduleData);
-      onScheduleAdded(); // Notify parent component
+      const response = await axios.post(`${Base_URL}/api/ships/schedules`, scheduleData);
+      if (onScheduleAdded) {
+        onScheduleAdded(); // Notify parent component
+      }
       onClose(); // Close the dialog
     } catch (error) {
-      console.error('Error adding schedule:', error);
+      console.error('Error updating schedule:', error);
+      
+      // Display error message to user
+      let errorMessage = 'Failed to add schedule. Please try again.';
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
+      }
+      
+      // You can use any toast/alert library here, or add a state to display the error
+      alert(errorMessage);
     }
   };
 

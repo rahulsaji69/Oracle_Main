@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './Navbar.css'; 
 import Logo from '../../Assets/Logo.jpg'
 
 function Navbar () {
   const [navbarScrolled, setNavbarScrolled] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
+  }, []);
 
   const handleScroll = () => {
     if (window.scrollY > 50) {
@@ -32,7 +40,11 @@ function Navbar () {
         <a href="#search">Search</a>
         <a href="#tracking">Tracking</a>
         
-        <a href="/login">Login</a>
+        {isLoggedIn ? (
+          <Link to="/dashboard">Dashboard</Link>
+        ) : (
+          <Link to="/login">Login</Link>
+        )}
       </div>
       <button className="navbar-toggler">&#9776;</button>
     </nav>
