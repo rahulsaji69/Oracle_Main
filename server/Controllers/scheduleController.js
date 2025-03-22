@@ -1,15 +1,30 @@
 const Schedule = require('../Models/Schedule'); // Assuming you create a Schedule model
+const Port = require('../Models/Port'); // Import Port model for country checks
+
+// Helper function to extract port name without country
+const getPortNameOnly = (portWithCountry) => {
+  // If port contains parentheses, extract just the port name
+  const match = portWithCountry.match(/^(.+?)\([^)]+\)$/);
+  return match ? match[1].trim() : portWithCountry.trim();
+};
 
 exports.createSchedule = async (req, res) => {
   const { shipId, startingPort, intermediatePorts, destinationPort, currentLocation, eta, etd } = req.body;
 
   try {
+    // Extract core port names for storage in database
+    const startingPortClean = getPortNameOnly(startingPort);
+    const destinationPortClean = getPortNameOnly(destinationPort);
+    const intermediatePortsClean = intermediatePorts.split(',')
+      .map(port => getPortNameOnly(port.trim()));
+    const currentLocationClean = getPortNameOnly(currentLocation);
+
     const newSchedule = new Schedule({
       shipId,
-      startingPort,
-      intermediatePorts: intermediatePorts.split(',').map(port => port.trim()), // Convert to array
-      destinationPort,
-      currentLocation,
+      startingPort: startingPortClean,
+      intermediatePorts: intermediatePortsClean,
+      destinationPort: destinationPortClean,
+      currentLocation: currentLocationClean,
       eta,
       etd
     });

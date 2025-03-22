@@ -1,0 +1,106 @@
+.analytics-container {
+  padding: 24px;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+.stat-card {
+  padding: 16px;
+  text-align: center;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+}
+
+.stat-card h6 {
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.stat-card h3 {
+  color: #2c3e50;
+  font-weight: 600;
+  margin: 0;
+}
+
+.chart-card {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chart-card h6 {
+  color: #2c3e50;
+  margin-bottom: 24px;
+  font-weight: 600;
+}
+
+/* Carbon emissions styles */
+.eco-card {
+  border-left: 4px solid #4CAF50;
+  transition: transform 0.3s;
+}
+
+.eco-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Styling for tooltip */
+.recharts-tooltip-wrapper {
+  z-index: 1000;
+}
+
+/* Responsive adjustments */
+@media (max-width: 960px) {
+  .chart-card {
+    overflow-x: auto;
+  }
+  
+  .chart-card svg {
+    min-width: 500px;
+  }
+}
+
+/* Custom scrollbar for chart cards */
+.chart-card::-webkit-scrollbar {
+  height: 8px;
+}
+
+.chart-card::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.chart-card::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.chart-card::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Additional responsiveness */
+@media (max-width: 600px) {
+  .analytics-container {
+    padding: 12px;
+  }
+  
+  .chart-card {
+    overflow-x: auto;
+  }
+} 

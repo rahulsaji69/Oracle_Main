@@ -22,14 +22,17 @@ router.post('/', async (req, res) => {
 
 router.get('/', async (req, res) => {
     try {
+      // Find all port documents with country and ports fields
+      const countries = await Port.find({}, 'country ports'); 
       
-      const countries = await Port.find({}, 'ports'); 
-      
-      const allPorts = countries.reduce((acc, country) => {
-        return acc.concat(country.ports);
+      // Format ports with country in parentheses
+      const formattedPorts = countries.reduce((acc, countryDoc) => {
+        const countryName = countryDoc.country;
+        const portsWithCountry = countryDoc.ports.map(port => `${port}(${countryName})`);
+        return acc.concat(portsWithCountry);
       }, []);
   
-      res.status(200).json({ ports: allPorts });
+      res.status(200).json({ ports: formattedPorts });
     } catch (error) {
       res.status(500).json({ message: 'Error retrieving ports', error });
     }

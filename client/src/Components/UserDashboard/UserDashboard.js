@@ -3,24 +3,45 @@ import { useNavigate, Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./UserDashboard.css";
-import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaYoutube } from 'react-icons/fa';
+import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaYoutube, FaTruck, FaCalendarAlt, FaBoxOpen, FaUserCog, FaCheckCircle, FaMapMarkerAlt, FaClock, FaRoute, FaHistory, FaEye, FaFileAlt, FaFileInvoice, FaFileContract, FaHome, FaBook, FaShip, FaTruckLoading, FaUser, FaPhone, FaEnvelope, FaMapMarker } from 'react-icons/fa';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 import { 
   Drawer, 
   List, 
   ListItem, 
-  ListItemText, 
+  ListItemText,
   IconButton, 
   AppBar, 
   Toolbar, 
   Typography, 
   Button, 
   Menu, 
-  MenuItem 
+  MenuItem,
+  Card,
+  CardContent,
+  Grid,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Select,
+  FormControl,
+  InputLabel,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  ListItemIcon,
+  Divider
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import AccountCircle from "@mui/icons-material/AccountCircle"; // Import AccountCircle icon
-import Logo from '../../Assets/Logo.jpg'; // Import the logo
+import AccountCircle from "@mui/icons-material/AccountCircle";
+import CloseIcon from '@mui/icons-material/Close';
+import Logo from '../../Assets/Logo.jpg';
 import solutionsBackground from '../../Assets/cc.jpg';
 import shippingIcon from '../../Assets/ii.jpg';
 import inlandIcon from '../../Assets/gg.jpg';
@@ -32,16 +53,116 @@ import fruitsImg from '../../Assets/fruits.webp';
 import pharmaceuticalsImg from '../../Assets/pharmaceuticals.webp';
 import carPartsImg from '../../Assets/car-parts.webp';
 
+const Footer = () => {
+  return (
+    <footer className="footer-section">
+      <div className="footer-container">
+        <div className="footer-left">
+          <h3>About Us</h3>
+          <p>Ocean Oracle is your trusted partner in global shipping and logistics solutions. We provide comprehensive services to meet all your transportation needs.</p>
+          <div className="social-icons">
+            <a href="#"><FaFacebookF /></a>
+            <a href="#"><FaTwitter /></a>
+            <a href="#"><FaInstagram /></a>
+            <a href="#"><FaLinkedinIn /></a>
+            <a href="#"><FaYoutube /></a>
+          </div>
+        </div>
+        
+        <div className="footer-center">
+          <h3>Quick Links</h3>
+          <ul>
+            <li><Link to="/dashboard">Dashboard</Link></li>
+            <li><Link to="/dashboard/bookings">Bookings</Link></li>
+            <li><Link to="/dashboard/shipping">Shipping</Link></li>
+            <li><Link to="/dashboard/trucking">Trucking</Link></li>
+            <li><Link to="/dashboard/profile">Profile</Link></li>
+          </ul>
+        </div>
+        
+        <div className="footer-right">
+          <h3>Contact Us</h3>
+          <div className="contact-info">
+            <div className="contact-item">
+              <FaPhone className="contact-icon" />
+              <span>+1 (555) 123-4567</span>
+            </div>
+            <div className="contact-item">
+              <FaEnvelope className="contact-icon" />
+              <span>info@oceanoracle.com</span>
+            </div>
+            <div className="contact-item">
+              <FaMapMarker className="contact-icon" />
+              <span>123 Shipping Lane, Port City, PC 12345</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="footer-bottom">
+        <p>&copy; 2024 Ocean Oracle. All rights reserved.</p>
+      </div>
+    </footer>
+  );
+};
+
 const Dashboard = () => {
   const [fromPort, setFromPort] = useState('');
   const [toPort, setToPort] = useState('');
   const [date, setDate] = useState('');
   const [userDetails, setUserDetails] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null); // State for the menu anchor
+  const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('schedules');
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  const [openSchedulingDialog, setOpenSchedulingDialog] = useState(false);
+  const [openMovementDialog, setOpenMovementDialog] = useState(false);
+  const [openDriverDialog, setOpenDriverDialog] = useState(false);
+  const [openDeliveryDialog, setOpenDeliveryDialog] = useState(false);
+  const [schedulingFormData, setSchedulingFormData] = useState({
+    pickupDate: '',
+    pickupTime: '',
+    pickupLocation: '',
+    deliveryDate: '',
+    deliveryTime: '',
+    deliveryLocation: '',
+    cargoType: '',
+    specialInstructions: ''
+  });
+  const [movementFormData, setMovementFormData] = useState({
+    containerId: '',
+    status: 'In Transit',
+    currentLocation: '',
+    estimatedDelivery: '',
+    notes: ''
+  });
+  const [driverFormData, setDriverFormData] = useState({
+    driverName: '',
+    driverPhone: '',
+    vehicleType: '',
+    vehicleId: '',
+    containerId: ''
+  });
+  const [deliveryFormData, setDeliveryFormData] = useState({
+    containerId: '',
+    deliveryDate: '',
+    receiverName: '',
+    receiverSignature: '',
+    notes: '',
+    status: 'Pending'
+  });
+
+  const [trackingNumber, setTrackingNumber] = useState('');
+  const [trackingResult, setTrackingResult] = useState(null);
+  const [trackingHistory, setTrackingHistory] = useState([]);
+  const [isTracking, setIsTracking] = useState(false);
+  const [trackingError, setTrackingError] = useState('');
+
+  const [bookingHistory, setBookingHistory] = useState([]);
+  const [isLoadingBookings, setIsLoadingBookings] = useState(false);
+  const [bookingDetailOpen, setBookingDetailOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
 
   const fetchUserDetails = () => {
     setUserDetails(JSON.parse(localStorage.getItem("user")));
@@ -55,6 +176,7 @@ const Dashboard = () => {
     "Dashboard",
     "eBookings",
     "Shipping Instructions",
+    "Trucking Services",
     "My Profile"
   ];
 
@@ -83,10 +205,9 @@ const Dashboard = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("user"); // Clear user details as well
+    localStorage.removeItem("user");
     toast.success("Logged out successfully!");
-    navigate("/", { replace: true }); // Redirect to the home page and replace the current entry
-    // No need for window.location.reload() as the navigation will handle it
+    navigate("/", { replace: true });
   };
 
   const toggleDrawer = (open) => (event) => {
@@ -97,12 +218,223 @@ const Dashboard = () => {
   };
 
   const handleProfileClick = (event) => {
-    setAnchorEl(event.currentTarget); // Set the anchor element for the menu
+    setAnchorEl(event.currentTarget);
   };
 
   const handleCloseMenu = () => {
-    setAnchorEl(null); // Close the menu
+    setAnchorEl(null);
   };
+
+  const handleOpenSchedulingDialog = () => {
+    setOpenSchedulingDialog(true);
+  };
+
+  const handleCloseSchedulingDialog = () => {
+    setOpenSchedulingDialog(false);
+  };
+
+  const handleOpenMovementDialog = () => {
+    setOpenMovementDialog(true);
+  };
+
+  const handleCloseMovementDialog = () => {
+    setOpenMovementDialog(false);
+  };
+
+  const handleOpenDriverDialog = () => {
+    setOpenDriverDialog(true);
+  };
+
+  const handleCloseDriverDialog = () => {
+    setOpenDriverDialog(false);
+  };
+
+  const handleOpenDeliveryDialog = () => {
+    setOpenDeliveryDialog(true);
+  };
+
+  const handleCloseDeliveryDialog = () => {
+    setOpenDeliveryDialog(false);
+  };
+
+  const handleSchedulingSubmit = () => {
+    toast.success("Pickup/delivery scheduled successfully!");
+    setOpenSchedulingDialog(false);
+  };
+
+  const handleMovementSubmit = () => {
+    toast.success("Container movement updated successfully!");
+    setOpenMovementDialog(false);
+  };
+
+  const handleDriverSubmit = () => {
+    toast.success("Driver assigned successfully!");
+    setOpenDriverDialog(false);
+  };
+
+  const handleDeliverySubmit = () => {
+    toast.success("Delivery confirmed successfully!");
+    setOpenDeliveryDialog(false);
+  };
+
+  const handleSchedulingFormChange = (e) => {
+    const { name, value } = e.target;
+    setSchedulingFormData({
+      ...schedulingFormData,
+      [name]: value
+    });
+  };
+
+  const handleMovementFormChange = (e) => {
+    const { name, value } = e.target;
+    setMovementFormData({
+      ...movementFormData,
+      [name]: value
+    });
+  };
+
+  const handleDriverFormChange = (e) => {
+    const { name, value } = e.target;
+    setDriverFormData({
+      ...driverFormData,
+      [name]: value
+    });
+  };
+
+  const handleDeliveryFormChange = (e) => {
+    const { name, value } = e.target;
+    setDeliveryFormData({
+      ...deliveryFormData,
+      [name]: value
+    });
+  };
+
+  const handleTrackPackage = async () => {
+    if (!trackingNumber) {
+      toast.error("Please enter a tracking number");
+      return;
+    }
+
+    setIsTracking(true);
+    setTrackingError('');
+
+    try {
+      const response = await new Promise(resolve => {
+        setTimeout(() => {
+          resolve({
+            status: 'success',
+            data: {
+              trackingNumber: trackingNumber,
+              currentStatus: 'In Transit',
+              currentLocation: 'Mumbai Port',
+              estimatedDelivery: '2024-03-25T15:00:00',
+              history: [
+                {
+                  date: '2024-03-20T10:00:00',
+                  location: 'Mumbai Port',
+                  status: 'Package Received',
+                  description: 'Package received at origin facility'
+                },
+                {
+                  date: '2024-03-21T14:30:00',
+                  location: 'Mumbai Port',
+                  status: 'Processing',
+                  description: 'Package being processed for shipping'
+                },
+                {
+                  date: '2024-03-22T09:15:00',
+                  location: 'Mumbai Port',
+                  status: 'In Transit',
+                  description: 'Package loaded onto container'
+                }
+              ]
+            }
+          });
+        }, 1000);
+      });
+
+      if (response.status === 'success') {
+        setTrackingResult(response.data);
+        setTrackingHistory(response.data.history);
+        toast.success("Package tracking information retrieved successfully!");
+      }
+    } catch (error) {
+      setTrackingError("Unable to track package. Please try again later.");
+      toast.error("Failed to track package");
+    } finally {
+      setIsTracking(false);
+    }
+  };
+
+  const fetchBookingHistory = async () => {
+    setIsLoadingBookings(true);
+    
+    try {
+      const response = await new Promise(resolve => {
+        setTimeout(() => {
+          resolve({
+            status: 'success',
+            data: [
+              {
+                id: 'BK-2024-0001',
+                date: '2024-03-01T10:30:00',
+                status: 'Completed',
+                origin: 'Mumbai Port',
+                destination: 'Singapore Port',
+                cargoType: 'General Cargo',
+                containerId: 'CONT-78945',
+                vessel: 'Ocean Voyager',
+                eta: '2024-03-15T08:00:00'
+              },
+              {
+                id: 'BK-2024-0002',
+                date: '2024-03-05T14:15:00',
+                status: 'In Transit',
+                origin: 'Mumbai Port',
+                destination: 'Dubai Port',
+                cargoType: 'Electronics',
+                containerId: 'CONT-65432',
+                vessel: 'Sea Navigator',
+                eta: '2024-03-25T16:30:00'
+              },
+              {
+                id: 'BK-2024-0003',
+                date: '2024-03-10T09:45:00',
+                status: 'Processing',
+                origin: 'Mumbai Port',
+                destination: 'Shanghai Port',
+                cargoType: 'Chemicals',
+                containerId: 'CONT-13579',
+                vessel: 'Ocean Explorer',
+                eta: '2024-04-05T10:15:00'
+              }
+            ]
+          });
+        }, 1000);
+      });
+
+      if (response.status === 'success') {
+        setBookingHistory(response.data);
+      }
+    } catch (error) {
+      toast.error("Failed to fetch booking history");
+    } finally {
+      setIsLoadingBookings(false);
+    }
+  };
+
+  const handleViewBookingDetail = (booking) => {
+    setSelectedBooking(booking);
+    setBookingDetailOpen(true);
+  };
+
+  const handleCloseBookingDetail = () => {
+    setBookingDetailOpen(false);
+  };
+
+  useEffect(() => {
+    fetchBookingHistory();
+  }, []);
 
   const drawerList = (
     <div
@@ -121,6 +453,196 @@ const Dashboard = () => {
       </List>
     </div>
   );
+
+  // Generate receipt PDF for a booking
+  const generateReceiptPDF = (booking) => {
+    const doc = new jsPDF();
+    
+    // Add company logo placeholder (this would be replaced with actual logo image)
+    doc.setDrawColor(15, 55, 95); // Navy blue
+    doc.setFillColor(15, 55, 95);
+    doc.rect(20, 10, 30, 15, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text('ORACLE', 24, 18);
+    doc.text('SHIPPING', 24, 22);
+    
+    // Reset text color
+    doc.setTextColor(0, 0, 0);
+    
+    // Add receipt title with styled background
+    doc.setFillColor(240, 240, 240);
+    doc.rect(0, 30, 210, 12, 'F');
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text('OFFICIAL PAYMENT RECEIPT', 105, 38, { align: 'center' });
+    
+    // Add reference number section with styling
+    doc.setFillColor(245, 245, 245);
+    doc.rect(140, 45, 50, 10, 'F');
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text('BOOKING ID', 142, 51);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text(booking.id || 'N/A', 142, 58);
+    
+    // Add date
+    doc.setFillColor(245, 245, 245);
+    doc.rect(140, 60, 50, 10, 'F');
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text('DATE ISSUED', 142, 66);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text(new Date().toLocaleDateString(), 142, 73);
+    
+    // Add shipping information section
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text('SHIPPING INFORMATION', 20, 60);
+    
+    // Shipping route with badge
+    doc.setDrawColor(200, 200, 200);
+    doc.setFillColor(250, 250, 250);
+    doc.roundedRect(20, 65, 110, 40, 2, 2, 'FD');
+    
+    // Add route details
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text('ROUTE', 25, 75);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`Origin: ${booking.origin}`, 25, 85);
+    doc.text(`Destination: ${booking.destination}`, 25, 95);
+    
+    // Add cargo details
+    doc.setFontSize(11); 
+    doc.setFont("helvetica", "bold");
+    doc.text('CARGO DETAILS', 25, 110);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`Type: ${booking.cargoType}`, 25, 120);
+    
+    // Status badge
+    doc.setDrawColor(0, 100, 0);
+    doc.setFillColor(230, 250, 230);
+    doc.roundedRect(25, 130, 70, 15, 2, 2, 'FD');
+    doc.setTextColor(0, 100, 0);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text(`STATUS: ${booking.status.toUpperCase()}`, 60, 139, { align: 'center' });
+    doc.setTextColor(0, 0, 0);
+    
+    // Vessel information
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text('VESSEL INFORMATION', 20, 160);
+    
+    // Create a styled table for vessel details
+    doc.autoTable({
+      startY: 165,
+      head: [['Details', 'Value']],
+      body: [
+        ['Vessel Name', booking.vessel || 'N/A'],
+        ['Container ID', booking.containerId || 'N/A'],
+        ['Estimated Arrival', new Date(booking.eta).toLocaleDateString()]
+      ],
+      theme: 'grid',
+      headStyles: { 
+        fillColor: [15, 55, 95], 
+        textColor: [255, 255, 255],
+        fontStyle: 'bold'
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245]
+      },
+      margin: { left: 20, right: 20 }
+    });
+    
+    // Add payment details section title
+    const tableEnd = doc.previousAutoTable.finalY + 15;
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text('PAYMENT DETAILS', 20, tableEnd);
+    
+    // Calculate payment amount based on cargo type
+    const baseAmount = booking.cargoType === 'General Cargo' ? 5000 : 
+                       booking.cargoType === 'Electronics' ? 8500 : 
+                       booking.cargoType === 'Chemicals' ? 7200 : 6000;
+    
+    const tax = baseAmount * 0.18; // 18% GST
+    const total = baseAmount + tax;
+    
+    // Create payment details table
+    doc.autoTable({
+      startY: tableEnd + 5,
+      head: [['Description', 'Amount (₹)']],
+      body: [
+        ['Shipping Charges', baseAmount.toFixed(2)],
+        ['GST (18%)', tax.toFixed(2)],
+        ['Insurance', '0.00'],
+        ['Additional Services', '0.00']
+      ],
+      foot: [['Total Amount', total.toFixed(2)]],
+      theme: 'grid',
+      headStyles: { 
+        fillColor: [15, 55, 95], 
+        textColor: [255, 255, 255],
+        fontStyle: 'bold'
+      },
+      footStyles: { 
+        fillColor: [240, 240, 240], 
+        textColor: [15, 55, 95], 
+        fontStyle: 'bold' 
+      },
+      margin: { left: 20, right: 20 }
+    });
+    
+    // Add payment method and transaction details
+    const paymentTableEnd = doc.previousAutoTable.finalY + 10;
+    
+    // Payment details in a box
+    doc.setDrawColor(200, 200, 200);
+    doc.setFillColor(250, 250, 250);
+    doc.roundedRect(20, paymentTableEnd, 170, 30, 2, 2, 'FD');
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text('Payment Method:', 30, paymentTableEnd + 10);
+    doc.setFont("helvetica", "normal");
+    doc.text('Razorpay', 80, paymentTableEnd + 10);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text('Payment Date:', 30, paymentTableEnd + 20);
+    doc.setFont("helvetica", "normal");
+    doc.text(new Date(booking.date).toLocaleDateString(), 80, paymentTableEnd + 20);
+    
+    // Add authorization statement
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(8);
+    doc.text('This is an electronically generated receipt and does not require a signature.', 105, paymentTableEnd + 35, { align: 'center' });
+    
+    // Add footer with contact information
+    doc.setDrawColor(15, 55, 95);
+    doc.setFillColor(15, 55, 95);
+    doc.rect(0, 272, 210, 25, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text('Oracle Shipping Ltd.', 105, 280, { align: 'center' });
+    
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.text('123 Port Avenue, Mumbai, India | support@oracleshipping.com | +91 12345 67890', 105, 287, { align: 'center' });
+    doc.text('Thank you for choosing Oracle Shipping - Your Eco-Friendly Shipping Partner', 105, 292, { align: 'center' });
+    
+    // Save the PDF with improved naming
+    const cleanDate = new Date().toISOString().split('T')[0];
+    doc.save(`Oracle-Payment-Receipt-${booking.id}-${cleanDate}.pdf`);
+  };
 
   return (
     <div className="dashboard-container">
@@ -144,7 +666,6 @@ const Dashboard = () => {
             <Link to="#search" style={{ textDecoration: 'none', color: '#333', fontWeight: 'bold' }}>Search</Link>
             <Link to="#tracking" style={{ textDecoration: 'none', color: '#333', fontWeight: 'bold' }}>Tracking</Link>
             
-            {/* User Profile Button */}
             <Button
               onClick={handleProfileClick}
               style={{ display: 'flex', alignItems: 'center', marginLeft: '20px' }}
@@ -154,7 +675,6 @@ const Dashboard = () => {
               </Typography>
               <AccountCircle style={{ fontSize: '30px', color: '#333' }} />
             </Button>
-            {/* User Menu */}
             <Menu
               anchorEl={anchorEl}
               open={Boolean(anchorEl)}
@@ -168,232 +688,735 @@ const Dashboard = () => {
       <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
         {drawerList}
       </Drawer>
-      <div className="header-section">
-        <h1 className="main-title">Welcome to Your Dashboard</h1>
-        <div className="tracking-container">
-          <div className="tracking-tabs">
-            <button 
-              className={`tab ${activeTab === 'tracking' ? 'active' : ''}`}
-              onClick={() => setActiveTab('tracking')}
-            >
-              TRACKING
-            </button>
-            <button 
-              className={`tab ${activeTab === 'schedules' ? 'active' : ''}`}
-              onClick={() => setActiveTab('schedules')}
-            >
-              SCHEDULES
-            </button>
-            <button 
-              className={`tab ${activeTab === 'contacts' ? 'active' : ''}`}
-              onClick={() => setActiveTab('contacts')}
-            >
-              CONTACTS
-            </button>
-          </div>
-          {activeTab === 'tracking' && (
-            <div className="tracking-content">
-              <div className="tracking-options">
-                <label>
-                  <input type="radio" name="tracking" value="container" defaultChecked />
-                  Container / Bill of Lading Number
-                </label>
-                <label>
-                  <input type="radio" name="tracking" value="booking" />
-                  Booking Number
-                </label>
-              </div>
-              <input type="text" placeholder="Search..." className="search-input" />
-            </div>
-          )}
-          {activeTab === 'schedules' && (
-            <div className="schedules-content">
-              <div className="port-inputs">
-                <input
-                  type="text"
-                  placeholder="From (Port)"
-                  className="port-input"
-                  value={fromPort}
-                  onChange={(e) => setFromPort(e.target.value)}
-                />
-                <button className="swap-button" onClick={() => {
-                  const temp = fromPort;
-                  setFromPort(toPort);
-                  setToPort(temp);
-                }}>⇄</button>
-                <input
-                  type="text"
-                  placeholder="To (Port)"
-                  className="port-input"
-                  value={toPort}
-                  onChange={(e) => setToPort(e.target.value)}
-                />
-              </div>
-              <input
-                type="date"
-                className="date-input"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
-              <button
-                className="search-button"
-                onClick={() => navigate(`/shipschedules?from=${fromPort}&to=${toPort}&date=${date}`)}
+      <div style={{ marginTop: '70px', padding: '20px' }}>
+        <div className="header-section">
+          <h1 className="main-title">Welcome to Your Dashboard</h1>
+          <div className="tracking-container">
+            <div className="tracking-tabs">
+              <button 
+                className={`tab ${activeTab === 'tracking' ? 'active' : ''}`}
+                onClick={() => setActiveTab('tracking')}
               >
-                Search
+                TRACKING
+              </button>
+              <button 
+                className={`tab ${activeTab === 'schedules' ? 'active' : ''}`}
+                onClick={() => setActiveTab('schedules')}
+              >
+                SCHEDULES
+              </button>
+              <button 
+                className={`tab ${activeTab === 'contacts' ? 'active' : ''}`}
+                onClick={() => setActiveTab('contacts')}
+              >
+                CONTACTS
               </button>
             </div>
+            {activeTab === 'tracking' && (
+              <div className="tracking-content">
+                <div className="tracking-options">
+                  <label>
+                    <input type="radio" name="tracking" value="container" defaultChecked />
+                    Container / Bill of Lading Number
+                  </label>
+                  <label>
+                    <input type="radio" name="tracking" value="booking" />
+                    Booking Number
+                  </label>
+                </div>
+                <input type="text" placeholder="Search..." className="search-input" />
+              </div>
+            )}
+            {activeTab === 'schedules' && (
+              <div className="schedules-content">
+                <div className="port-inputs">
+                  <input
+                    type="text"
+                    placeholder="From (Port)"
+                    className="port-input"
+                    value={fromPort}
+                    onChange={(e) => setFromPort(e.target.value)}
+                  />
+                  <button className="swap-button" onClick={() => {
+                    const temp = fromPort;
+                    setFromPort(toPort);
+                    setToPort(temp);
+                  }}>⇄</button>
+                  <input
+                    type="text"
+                    placeholder="To (Port)"
+                    className="port-input"
+                    value={toPort}
+                    onChange={(e) => setToPort(e.target.value)}
+                  />
+                </div>
+                <input
+                  type="date"
+                  className="date-input"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+                <button
+                  className="search-button"
+                  onClick={() => navigate('/ebookings', { 
+                    state: { 
+                      originPort: fromPort, 
+                      destinationPort: toPort, 
+                      preferredShippingDate: date 
+                    }
+                  })}
+                >
+                  Search
+                </button>
+              </div>
+            )}
+            {activeTab === 'contacts' && (
+              <div className="contacts-content">
+                <p>Contacts information will be displayed here.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="tracking-section">
+          <h2 className="section-title">Package Tracking</h2>
+          <p className="section-description">Track your packages in real-time with detailed status updates</p>
+          
+          <div className="tracking-search">
+            <TextField
+              fullWidth
+              variant="outlined"
+              placeholder="Enter Tracking Number"
+              value={trackingNumber}
+              onChange={(e) => setTrackingNumber(e.target.value)}
+              className="tracking-input"
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleTrackPackage}
+              disabled={isTracking}
+              className="track-button"
+            >
+              {isTracking ? "Tracking..." : "Track Package"}
+            </Button>
+          </div>
+
+          {trackingError && (
+            <div className="tracking-error">
+              {trackingError}
+            </div>
           )}
-          {activeTab === 'contacts' && (
-            <div className="contacts-content">
-              {/* Add contacts content here */}
-              <p>Contacts information will be displayed here.</p>
+
+          {trackingResult && (
+            <div className="tracking-result">
+              <Card className="tracking-status-card">
+                <CardContent>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={4}>
+                      <div className="status-item">
+                        <FaMapMarkerAlt className="status-icon" />
+                        <div>
+                          <Typography variant="subtitle2" color="textSecondary">
+                            Current Location
+                          </Typography>
+                          <Typography variant="h6">
+                            {trackingResult.currentLocation}
+                          </Typography>
+                        </div>
+                      </div>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <div className="status-item">
+                        <FaClock className="status-icon" />
+                        <div>
+                          <Typography variant="subtitle2" color="textSecondary">
+                            Current Status
+                          </Typography>
+                          <Typography variant="h6">
+                            {trackingResult.currentStatus}
+                          </Typography>
+                        </div>
+                      </div>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <div className="status-item">
+                        <FaRoute className="status-icon" />
+                        <div>
+                          <Typography variant="subtitle2" color="textSecondary">
+                            Estimated Delivery
+                          </Typography>
+                          <Typography variant="h6">
+                            {new Date(trackingResult.estimatedDelivery).toLocaleString()}
+                          </Typography>
+                        </div>
+                      </div>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+
+              <div className="tracking-timeline">
+                <Typography variant="h6" className="timeline-title">
+                  Tracking History
+                </Typography>
+                <div className="timeline">
+                  {trackingHistory.map((event, index) => (
+                    <div key={index} className="timeline-item">
+                      <div className="timeline-dot"></div>
+                      <div className="timeline-content">
+                        <Typography variant="subtitle1" className="timeline-date">
+                          {new Date(event.date).toLocaleString()}
+                        </Typography>
+                        <Typography variant="h6" className="timeline-status">
+                          {event.status}
+                        </Typography>
+                        <Typography variant="body2" className="timeline-location">
+                          {event.location}
+                        </Typography>
+                        <Typography variant="body2" className="timeline-description">
+                          {event.description}
+                        </Typography>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="services-section">
+            <h2 className="section-title">Services</h2>
+            <p className="section-description">Manage your shipping and delivery needs</p>
+            
+            <Grid container spacing={3} className="services-grid">
+              <Grid item xs={12} sm={6} md={4}>
+                <Card className="service-card" onClick={handleOpenSchedulingDialog}>
+                  <CardContent>
+                    <FaCalendarAlt size={40} className="service-icon" />
+                    <Typography variant="h6" component="div">
+                      Pick-up/Delivery Scheduling
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Schedule pickups and deliveries for your containers
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={4}>
+                <Card className="service-card" onClick={handleOpenMovementDialog}>
+                  <CardContent>
+                    <FaBoxOpen size={40} className="service-icon" />
+                    <Typography variant="h6" component="div">
+                      Container Movement Updates
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Update or track the movement of your containers
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={4}>
+                <Card className="service-card" onClick={handleOpenDriverDialog}>
+                  <CardContent>
+                    <FaUserCog size={40} className="service-icon" />
+                    <Typography variant="h6" component="div">
+                      Driver Assignment
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Assign drivers to your shipments
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={4}>
+                <Card className="service-card" onClick={handleOpenDeliveryDialog}>
+                  <CardContent>
+                    <FaCheckCircle size={40} className="service-icon" />
+                    <Typography variant="h6" component="div">
+                      Delivery Confirmation
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Confirm delivery of your containers
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </div>
+        </div>
+
+        <div className="booking-history-section">
+          <h2 className="section-title">Booking History</h2>
+          <p className="section-description">View and manage your past bookings</p>
+          
+          {isLoadingBookings ? (
+            <div className="loading-spinner">
+              <Typography>Loading booking history...</Typography>
+            </div>
+          ) : (
+            <div className="booking-history-table">
+              <Card>
+                <CardContent>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Booking ID</TableCell>
+                        <TableCell>Date</TableCell>
+                        <TableCell>Origin</TableCell>
+                        <TableCell>Destination</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {bookingHistory.length > 0 ? (
+                        bookingHistory.map((booking) => (
+                          <TableRow key={booking.id} className="booking-row">
+                            <TableCell>{booking.id}</TableCell>
+                            <TableCell>{new Date(booking.date).toLocaleDateString()}</TableCell>
+                            <TableCell>{booking.origin}</TableCell>
+                            <TableCell>{booking.destination}</TableCell>
+                            <TableCell>
+                              <span className={`status-badge status-${booking.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                                {booking.status}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <IconButton
+                                color="primary"
+                                onClick={() => handleViewBookingDetail(booking)}
+                                title="View Details"
+                              >
+                                <FaEye />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={6} align="center">
+                            No booking history found
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
             </div>
           )}
         </div>
       </div>
-      <div className="main-content">
-        {/* Solutions Section */}
-        <section className="solutions-section" style={{ backgroundImage: `url(${solutionsBackground})` }}>
-          <div className="container">
-            <h2>Our Solutions</h2>
-            <p className="solutions-description">
-              As a global leader in container shipping, our worldwide teams of industry-specific experts offer round-the-clock personalized service. We ensure fast and reliable transit times, providing the best solutions for your needs.
-            </p>
-            <div className="solutions-container">
-              <div className="solution">
-                <img src={shippingIcon} alt="Shipping Solutions" className="solution-icon" />
-                <h3>Shipping Solutions</h3>
-              </div>
-              <div className="solution">
-                <img src={inlandIcon} alt="Inland Transportation" className="solution-icon" />
-                <h3>Inland Transportation & Logistics Solutions</h3>
-              </div>
-              <div className="solution">
-                <img src={airCargoIcon} alt="Air Cargo" className="solution-icon" />
-                <h3>Air Cargo Solutions</h3>
-              </div>
-              <div className="solution">
-                <img src={digitalIcon} alt="Digital Business" className="solution-icon" />
-                <h3>Digital Business Solutions</h3>
-              </div>
-              <div className="solution">
-                <img src={cargoCoverIcon} alt="Cargo Cover" className="solution-icon" />
-                <h3>Cargo Cover Solutions</h3>
-              </div>
-            </div>
-            <button className="see-all-button">See all solutions</button>
-          </div>
-        </section>
+      <Footer />
+      <Dialog open={openSchedulingDialog} onClose={handleCloseSchedulingDialog} maxWidth="md">
+        <DialogTitle>Schedule Pickup/Delivery</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                margin="dense"
+                label="Pickup Date"
+                name="pickupDate"
+                type="date"
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                value={schedulingFormData.pickupDate}
+                onChange={handleSchedulingFormChange}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                margin="dense"
+                label="Pickup Time"
+                name="pickupTime"
+                type="time"
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                value={schedulingFormData.pickupTime}
+                onChange={handleSchedulingFormChange}
+              />
+            </Grid>
+          </Grid>
+          <TextField
+            margin="dense"
+            label="Pickup Location"
+            name="pickupLocation"
+            fullWidth
+            value={schedulingFormData.pickupLocation}
+            onChange={handleSchedulingFormChange}
+          />
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                margin="dense"
+                label="Delivery Date"
+                name="deliveryDate"
+                type="date"
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                value={schedulingFormData.deliveryDate}
+                onChange={handleSchedulingFormChange}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                margin="dense"
+                label="Delivery Time"
+                name="deliveryTime"
+                type="time"
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                value={schedulingFormData.deliveryTime}
+                onChange={handleSchedulingFormChange}
+              />
+            </Grid>
+          </Grid>
+          <TextField
+            margin="dense"
+            label="Delivery Location"
+            name="deliveryLocation"
+            fullWidth
+            value={schedulingFormData.deliveryLocation}
+            onChange={handleSchedulingFormChange}
+          />
+          <TextField
+            margin="dense"
+            label="Cargo Type"
+            name="cargoType"
+            fullWidth
+            value={schedulingFormData.cargoType}
+            onChange={handleSchedulingFormChange}
+          />
+          <TextField
+            margin="dense"
+            label="Special Instructions"
+            name="specialInstructions"
+            fullWidth
+            multiline
+            rows={3}
+            value={schedulingFormData.specialInstructions}
+            onChange={handleSchedulingFormChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseSchedulingDialog}>Cancel</Button>
+          <Button onClick={handleSchedulingSubmit} color="primary">Schedule</Button>
+        </DialogActions>
+      </Dialog>
 
-        {/* Industries Section */}
-        <section className="industries-section">
-          <div className="container">
-            <h2 className="section-title">Your Shipping Needs Met</h2>
-            <div className="title-underline"></div>
-            
-            <div className="description-text">
-              <p>At Ocean Oracle we pride ourselves on being a global container shipping company that delivers tailored solutions designed to meet the specific needs of each of our customers. Regardless of your cargo type, or final destination, we offer versatile solutions that cover air, land, and sea.</p>
-              <p>Thanks to the extensive capacity of our container fleet, Ocean Oracle is the trusted transportation partner and shipping company for numerous companies the world over.</p>
-            </div>
+      <Dialog open={openMovementDialog} onClose={handleCloseMovementDialog} maxWidth="md">
+        <DialogTitle>Container Movement Updates</DialogTitle>
+        <DialogContent>
+          <TextField
+            margin="dense"
+            label="Container ID"
+            name="containerId"
+            fullWidth
+            value={movementFormData.containerId}
+            onChange={handleMovementFormChange}
+          />
+          <FormControl fullWidth margin="dense">
+            <InputLabel>Status</InputLabel>
+            <Select
+              name="status"
+              value={movementFormData.status}
+              onChange={handleMovementFormChange}
+              label="Status"
+            >
+              <MenuItem value="At Origin">At Origin</MenuItem>
+              <MenuItem value="In Transit">In Transit</MenuItem>
+              <MenuItem value="At Destination">At Destination</MenuItem>
+              <MenuItem value="Delivered">Delivered</MenuItem>
+              <MenuItem value="Delayed">Delayed</MenuItem>
+            </Select>
+          </FormControl>
+          <TextField
+            margin="dense"
+            label="Current Location"
+            name="currentLocation"
+            fullWidth
+            value={movementFormData.currentLocation}
+            onChange={handleMovementFormChange}
+          />
+          <TextField
+            margin="dense"
+            label="Estimated Delivery"
+            name="estimatedDelivery"
+            type="datetime-local"
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+            value={movementFormData.estimatedDelivery}
+            onChange={handleMovementFormChange}
+          />
+          <TextField
+            margin="dense"
+            label="Notes"
+            name="notes"
+            fullWidth
+            multiline
+            rows={3}
+            value={movementFormData.notes}
+            onChange={handleMovementFormChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseMovementDialog}>Cancel</Button>
+          <Button onClick={handleMovementSubmit} color="primary">Update</Button>
+        </DialogActions>
+      </Dialog>
 
-            <div className="industries-slider">
-              <button className="slider-arrow prev" onClick={() => setCurrentSlide(prev => (prev === 0 ? industries.length - 1 : prev - 1))}>
-                ‹
-              </button>
-              
-              <div className="industries-container">
-                {industries.map((industry, index) => (
-                  <div 
-                    key={industry.title}
-                    className={`industry-card ${index === currentSlide ? 'active' : ''}`}
-                    style={{ backgroundImage: `url(${industry.image})` }}
-                  >
-                    <div className="industry-content">
-                      <h3>{industry.title}</h3>
-                      <p>{industry.description}</p>
-                      <button className="read-more">READ MORE</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+      <Dialog open={openDriverDialog} onClose={handleCloseDriverDialog} maxWidth="md">
+        <DialogTitle>Driver Assignment</DialogTitle>
+        <DialogContent>
+          <TextField
+            margin="dense"
+            label="Container ID"
+            name="containerId"
+            fullWidth
+            value={driverFormData.containerId}
+            onChange={handleDriverFormChange}
+          />
+          <TextField
+            margin="dense"
+            label="Driver Name"
+            name="driverName"
+            fullWidth
+            value={driverFormData.driverName}
+            onChange={handleDriverFormChange}
+          />
+          <TextField
+            margin="dense"
+            label="Driver Phone"
+            name="driverPhone"
+            fullWidth
+            value={driverFormData.driverPhone}
+            onChange={handleDriverFormChange}
+          />
+          <TextField
+            margin="dense"
+            label="Vehicle Type"
+            name="vehicleType"
+            fullWidth
+            value={driverFormData.vehicleType}
+            onChange={handleDriverFormChange}
+          />
+          <TextField
+            margin="dense"
+            label="Vehicle ID/License"
+            name="vehicleId"
+            fullWidth
+            value={driverFormData.vehicleId}
+            onChange={handleDriverFormChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDriverDialog}>Cancel</Button>
+          <Button onClick={handleDriverSubmit} color="primary">Assign</Button>
+        </DialogActions>
+      </Dialog>
 
-              <button className="slider-arrow next" onClick={() => setCurrentSlide(prev => (prev === industries.length - 1 ? 0 : prev + 1))}>
-                ›
-              </button>
-            </div>
+      <Dialog open={openDeliveryDialog} onClose={handleCloseDeliveryDialog} maxWidth="md">
+        <DialogTitle>Delivery Confirmation</DialogTitle>
+        <DialogContent>
+          <TextField
+            margin="dense"
+            label="Container ID"
+            name="containerId"
+            fullWidth
+            value={deliveryFormData.containerId}
+            onChange={handleDeliveryFormChange}
+          />
+          <TextField
+            margin="dense"
+            label="Delivery Date"
+            name="deliveryDate"
+            type="date"
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+            value={deliveryFormData.deliveryDate}
+            onChange={handleDeliveryFormChange}
+          />
+          <TextField
+            margin="dense"
+            label="Receiver Name"
+            name="receiverName"
+            fullWidth
+            value={deliveryFormData.receiverName}
+            onChange={handleDeliveryFormChange}
+          />
+          <TextField
+            margin="dense"
+            label="Receiver Signature"
+            name="receiverSignature"
+            fullWidth
+            value={deliveryFormData.receiverSignature}
+            onChange={handleDeliveryFormChange}
+          />
+          <TextField
+            margin="dense"
+            label="Notes"
+            name="notes"
+            fullWidth
+            multiline
+            rows={3}
+            value={deliveryFormData.notes}
+            onChange={handleDeliveryFormChange}
+          />
+          <FormControl fullWidth margin="dense">
+            <InputLabel>Status</InputLabel>
+            <Select
+              name="status"
+              value={deliveryFormData.status}
+              onChange={handleDeliveryFormChange}
+              label="Status"
+            >
+              <MenuItem value="Pending">Pending</MenuItem>
+              <MenuItem value="Delivered">Delivered</MenuItem>
+              <MenuItem value="Partial Delivery">Partial Delivery</MenuItem>
+              <MenuItem value="Rejected">Rejected</MenuItem>
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeliveryDialog}>Cancel</Button>
+          <Button onClick={handleDeliverySubmit} color="primary">Confirm Delivery</Button>
+        </DialogActions>
+      </Dialog>
 
-            <div className="slider-dots">
-              {industries.map((_, index) => (
-                <span 
-                  key={index}
-                  className={`dot ${index === currentSlide ? 'active' : ''}`}
-                  onClick={() => setCurrentSlide(index)}
-                ></span>
-              ))}
-            </div>
-          </div>
-        </section>
+      <Dialog open={bookingDetailOpen} onClose={handleCloseBookingDetail} maxWidth="md">
+        <DialogTitle>
+          Booking Details
+          <IconButton
+            aria-label="close"
+            onClick={handleCloseBookingDetail}
+            sx={{ position: 'absolute', right: 8, top: 8 }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          {selectedBooking && (
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" color="textSecondary">Booking ID</Typography>
+                <Typography variant="body1" gutterBottom>{selectedBooking.id}</Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" color="textSecondary">Date</Typography>
+                <Typography variant="body1" gutterBottom>{new Date(selectedBooking.date).toLocaleString()}</Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" color="textSecondary">Status</Typography>
+                <Typography variant="body1" gutterBottom>{selectedBooking.status}</Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" color="textSecondary">Cargo Type</Typography>
+                <Typography variant="body1" gutterBottom>{selectedBooking.cargoType}</Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" color="textSecondary">Origin</Typography>
+                <Typography variant="body1" gutterBottom>{selectedBooking.origin}</Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" color="textSecondary">Destination</Typography>
+                <Typography variant="body1" gutterBottom>{selectedBooking.destination}</Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" color="textSecondary">Container ID</Typography>
+                <Typography variant="body1" gutterBottom>{selectedBooking.containerId}</Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" color="textSecondary">Vessel</Typography>
+                <Typography variant="body1" gutterBottom>{selectedBooking.vessel}</Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" color="textSecondary">ETA</Typography>
+                <Typography variant="body1" gutterBottom>{new Date(selectedBooking.eta).toLocaleString()}</Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="h6" gutterBottom>Shipment Documents</Typography>
+                <List>
+                  <ListItem>
+                    <ListItemIcon><FaFileAlt /></ListItemIcon>
+                    <ListItemText primary="Bill of Lading" secondary="View | Download" />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemIcon><FaFileInvoice /></ListItemIcon>
+                    <ListItemText primary="Commercial Invoice" secondary="View | Download" />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemIcon><FaFileContract /></ListItemIcon>
+                    <ListItemText primary="Packing List" secondary="View | Download" />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemIcon><FaFileInvoice /></ListItemIcon>
+                    <ListItemText 
+                      primary="Payment Receipt" 
+                      secondary={
+                        <span 
+                          style={{cursor: 'pointer', color: '#1976d2'}} 
+                          onClick={() => generateReceiptPDF(selectedBooking)}
+                        >
+                          Download Receipt
+                        </span>
+                      } 
+                    />
+                  </ListItem>
+                </List>
+              </Grid>
 
-        {/* Footer Section */}
-        <footer className="footer-section">
-          <div className="footer-container">
-            <div className="footer-left">
-              <div className="location-selector">
-                <select defaultValue="IN" className="country-select">
-                  <option value="IN">IN</option>
-                </select>
-                <select defaultValue="MUMBAI" className="office-select">
-                  <option value="MUMBAI">OCEAN ORACLE MUMBAI</option>
-                </select>
-              </div>
-              <div className="contact-info">
-                <a href="tel:+912226378000"><i className="fas fa-phone"></i>+91 2226378000</a>
-                <a href="mailto:info@oceanoracle.com"><i className="fas fa-envelope"></i>info@oceanoracle.com</a>
-                <a href="ff"><i className="fas fa-map-marker-alt"></i>Office details</a>
-              </div>
-            </div>
-
-            <div className="footer-center">
-              <div className="footer-links">
-                <span>Solutions</span>
-                <span>Local information</span>
-                <span>E-Business</span>
-                <span>Sustainability</span>
-                <span>myOceanOracle</span>
-              </div>
-            </div>
-
-            <div className="footer-right">
-              <div className="footer-links">
-                <span>Ocean Oracle Group</span>
-                <span>Newsroom</span>
-                <span>Events</span>
-                <span>Blog</span>
-                <span>Careers</span>
-                <span>Contact us</span>
-                <span>Preference Center</span>
-              </div>
-              <div className="social-icons">
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
-            <FaFacebookF />
-          </a>
-          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
-            <FaTwitter />
-          </a>
-          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
-            <FaInstagram />
-          </a>
-          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
-            <FaLinkedinIn />
-          </a>
-          <a href="https://youtube.com" target="_blank" rel="noopener noreferrer">
-            <FaYoutube />
-          </a>
-              </div>
-            </div>
-          </div>
-        </footer>
-      </div>
+              <Grid item xs={12}>
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="h6" gutterBottom>Payment Information</Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="subtitle2" color="textSecondary">Payment Status</Typography>
+                    <Typography variant="body1" gutterBottom>
+                      <span className="status-badge status-completed">Paid</span>
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="subtitle2" color="textSecondary">Payment Method</Typography>
+                    <Typography variant="body1" gutterBottom>Razorpay</Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="subtitle2" color="textSecondary">Payment Date</Typography>
+                    <Typography variant="body1" gutterBottom>{new Date(selectedBooking.date).toLocaleDateString()}</Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Button 
+                      variant="contained" 
+                      startIcon={<FaFileInvoice />}
+                      onClick={() => generateReceiptPDF(selectedBooking)}
+                      color="primary"
+                      size="small"
+                    >
+                      Download Receipt
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseBookingDetail}>Close</Button>
+          {selectedBooking && selectedBooking.status === 'In Transit' && (
+            <Button color="primary" startIcon={<FaRoute />} onClick={() => {
+              handleCloseBookingDetail();
+              setTrackingNumber(selectedBooking.containerId);
+              handleTrackPackage();
+            }}>
+              Track Shipment
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

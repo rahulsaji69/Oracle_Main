@@ -4,10 +4,14 @@ import "./LoginForm.css";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify"; 
 import "react-toastify/dist/ReactToastify.css"; 
+import BottomNavbar from "../Navbar/BottomNavbar";
+import { Button, Paper } from "@mui/material";
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [navValue, setNavValue] = useState(0);
 
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -61,7 +65,6 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-
     const isEmailValid = validateEmail(email);
     const isPasswordValid = validatePassword(password);
 
@@ -72,7 +75,7 @@ const LoginForm = () => {
           password,
         });
 
-        if (response.data.status === 1) {
+        if (response && response.data && response.data.status === 1) {
           localStorage.setItem('token', response.data.token);
           localStorage.setItem('user', JSON.stringify(response.data.user));
          
@@ -89,17 +92,26 @@ const LoginForm = () => {
             setTimeout(() => {
               navigate("/shiprep");
             }, 1000);
+          }else if(response.data.user.role === 'trucking'){
+            setTimeout(() => {
+              navigate("/trucking");
+            }, 1000);
           }
           else {
             setTimeout(() => {
               navigate("/admin-dashboard");
             }, 1000);
           }
-          
         }
       } catch (error) {
         console.error("Login error:", error);
-        toast.error(error.response.data.message);
+        if (error.code === 'ERR_NETWORK') {
+          toast.error("Unable to connect to the server. Please check if the server is running.");
+        } else if (error.response && error.response.data && error.response.data.message) {
+          toast.error(error.response.data.message);
+        } else {
+          toast.error("An error occurred during login. Please try again.");
+        }
       }
     }
   };
@@ -107,6 +119,20 @@ const LoginForm = () => {
   return (
     <div className="login-container">
       <ToastContainer /> 
+      <Paper className="booking-banner" elevation={2}>
+        <div className="booking-content">
+          <h3>Quick Shipping Solution</h3>
+          <p>Book your shipment instantly</p>
+          <Button
+            variant="contained"
+            startIcon={<ConfirmationNumberIcon />}
+            onClick={() => navigate("/booking")}
+            className="booking-button"
+          >
+            Book Now
+          </Button>
+        </div>
+      </Paper>
       <div className="login-box">
         <h2>Login</h2>
         <form onSubmit={handleSubmit}>
@@ -158,6 +184,7 @@ const LoginForm = () => {
           </div>
         </form>
       </div>
+      <BottomNavbar value={navValue} setValue={setNavValue} />
     </div>
   );
 };

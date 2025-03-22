@@ -1,0 +1,19 @@
+.bottom-navbar {
+  background-color: #fff;
+  padding: 8px 0;
+}
+
+.MuiBottomNavigationAction-root {
+  min-width: 60px;
+  padding: 6px 8px;
+}
+
+.MuiBottomNavigationAction-root.Mui-selected {
+  color: #0e0c01;
+}
+
+@media (min-width: 600px) {
+  .MuiBottomNavigationAction-root {
+    min-width: 80px;
+  }
+} 

@@ -2,228 +2,434 @@
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
 .scheduled-ship-container {
-  font-family: 'Roboto', sans-serif;
-  background-color: #f5f5f5;
-  color: #333;
   max-width: 1200px;
   margin: 0 auto;
   padding: 40px 20px;
+  font-family: 'Roboto', Arial, sans-serif;
 }
 
 .scheduled-ship-container h1 {
-  text-align: center;
+  font-size: 32px;
+  margin-bottom: 35px;
   color: #2c3e50;
-  margin-bottom: 30px;
+  text-align: center;
+  position: relative;
   font-weight: 700;
+}
+
+.scheduled-ship-container h1:after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(to right, #3498db, #2980b9);
+  border-radius: 2px;
 }
 
 .scheduled-ship-search-container {
   background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 30px;
-  margin-bottom: 40px;
+  padding: 28px;
+  border-radius: 10px;
+  box-shadow: 0 3px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 35px;
+  transition: all 0.3s ease;
+}
+
+.scheduled-ship-search-container:hover {
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
 }
 
 .scheduled-ship-tabs {
   display: flex;
-  margin-bottom: 30px;
-  border-bottom: 2px solid #e0e0e0;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
 }
 
 .scheduled-ship-tab {
-  padding: 12px 20px;
+  padding: 10px 20px;
+  background: none;
   border: none;
-  background-color: transparent;
-  cursor: pointer;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
   color: #777;
+  cursor: pointer;
   transition: all 0.3s ease;
+  position: relative;
 }
 
 .scheduled-ship-tab.active {
-  color: #fcdc4c;
-  border-bottom: 2px solid #fcdc4c;
+  color: #3498db;
+}
+
+.scheduled-ship-tab.active:after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #3498db;
 }
 
 .scheduled-ship-input-group {
   display: flex;
-  justify-content: space-evenly;
+  align-items: center;
+  gap: 15px;
   margin-bottom: 20px;
 }
 
 .scheduled-ship-input-wrapper {
-  width: 50%;
-  position: relative;
-  
+  flex: 1;
+}
+
+.scheduled-ship-select,
+.scheduled-ship-input {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.scheduled-ship-select:focus,
+.scheduled-ship-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+.scheduled-ship-select.error,
+.scheduled-ship-input.error {
+  border-color: #e74c3c;
+}
+
+.scheduled-ship-swap-btn {
+  background-color: #f1f1f1;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.scheduled-ship-swap-btn:hover {
+  background-color: #e5e5e5;
 }
 
 .scheduled-ship-date-wrapper {
   margin-bottom: 20px;
 }
 
-.scheduled-ship-input {
-  width: 50%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-  transition: all 0.3s ease;
-}
-
-.scheduled-ship-input:focus {
-  border-color: #fcdc4c;
-  box-shadow: 0 0 0 2px rgba(252, 220, 76, 0.2);
-  outline: none;
-}
-
-.scheduled-ship-label {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #999;
-  pointer-events: none;
-  transition: all 0.3s ease;
-}
-
-.scheduled-ship-input-wrapper.focused .scheduled-ship-label,
-.scheduled-ship-input:not(:placeholder-shown) + .scheduled-ship-label {
-  top: 0;
-  font-size: 12px;
-  background-color: #fff;
-  padding: 0 4px;
-}
-
-.scheduled-ship-swap-btn {
-  background-color: #fcdc4c;
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.scheduled-ship-swap-btn:hover {
-  background-color: #ffd54f;
-  transform: scale(1.1);
+.error-message {
+  color: #e74c3c;
+  font-size: 14px;
+  margin-top: 5px;
+  display: block;
 }
 
 .scheduled-ship-search-btn {
+  display: block;
   width: 100%;
-  padding: 12px;
-  background-color: #fcdc4c;
+  padding: 14px;
+  background-color: #3498db;
+  color: white;
   border: none;
-  border-radius: 4px;
-  color: #2c3e50;
-  font-weight: 500;
+  border-radius: 6px;
   font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s;
 }
 
 .scheduled-ship-search-btn:hover {
-  background-color: #ffd54f;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  background-color: #2980b9;
 }
 
 .scheduled-ship-search-btn:disabled {
-  background-color: #ccc;
+  background-color: #95a5a6;
   cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.scheduled-ship-results-container {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 30px;
-}
-
-.scheduled-ship-results-container h2 {
-  color: #2c3e50;
-  margin-bottom: 20px;
-  font-weight: 500;
-}
-
-.scheduled-ship-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
-.scheduled-ship-table th,
-.scheduled-ship-table td {
-  padding: 15px;
-  text-align: left;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.scheduled-ship-table th {
-  background-color: #f5f5f5;
-  font-weight: 500;
-  color: #2c3e50;
-}
-
-.scheduled-ship-quote-btn,
-.scheduled-ship-book-btn {
-  padding: 8px 12px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.scheduled-ship-quote-btn {
-  background-color: #fff;
-  color: #2c3e50;
-  border: 1px solid #2c3e50;
-  margin-right: 10px;
-}
-
-.scheduled-ship-quote-btn:hover {
-  background-color: #2c3e50;
-  color: #fff;
-}
-
-.scheduled-ship-book-btn {
-  background-color: #fcdc4c;
-  color: #2c3e50;
-}
-
-.scheduled-ship-book-btn:hover {
-  background-color: #ffd54f;
+  opacity: 0.8;
+  animation: pulse 1.5s infinite ease-in-out;
 }
 
 .scheduled-ship-error-message {
+  background-color: #ffeaea;
   color: #e74c3c;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-size: 16px;
   text-align: center;
+}
+
+.scheduled-ship-results-container {
+  overflow-x: auto;
+}
+
+/* New card styles replacing table styles */
+.ship-cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 25px;
   margin-top: 20px;
+}
+
+.ship-card {
+  position: relative;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.ship-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.ship-card.optimal-emissions {
+  border: 2px solid #4CAF50;
+  background-color: rgba(76, 175, 80, 0.05);
+  box-shadow: 0 5px 20px rgba(76, 175, 80, 0.15);
+}
+
+.recommended-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #4CAF50;
+  color: white;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: bold;
+  border-bottom-left-radius: 8px;
+  text-transform: uppercase;
+  z-index: 1;
+  box-shadow: -2px 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.recommended-text {
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.5px;
+}
+
+.recommended-text:before {
+  content: "✓";
+  margin-right: 5px;
+  font-size: 14px;
+}
+
+.eco-friendly-tag {
+  font-size: 10px;
+  margin-top: 4px;
+  font-weight: normal;
+  opacity: 0.9;
+  text-transform: none;
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.3px;
+}
+
+.ship-card-header {
+  padding: 22px 20px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  background: linear-gradient(to bottom, #fafafa, #f5f5f5);
+}
+
+.ship-name {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 5px;
+  color: #2c3e50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.voyage-number {
+  color: #7f8c8d;
+  font-size: 14px;
+  margin-top: 5px;
   font-weight: 500;
 }
 
+.ship-card-body {
+  padding: 20px;
+  flex-grow: 1;
+}
+
+.ship-detail-row {
+  display: flex;
+  margin-bottom: 14px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.ship-detail-label {
+  flex: 0 0 40%;
+  font-weight: 600;
+  color: #34495e;
+}
+
+.ship-detail-value {
+  flex: 0 0 60%;
+  color: #2c3e50;
+}
+
+.emissions-detail {
+  margin-top: 20px;
+  padding: 16px;
+  background-color: #f1f9fe;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+  transition: all 0.3s ease;
+}
+
+.ship-card.optimal-emissions .emissions-detail {
+  background-color: #ebfaeb;
+  border-left-color: #4CAF50;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.1);
+}
+
+.emissions-label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #2c3e50;
+}
+
+.emissions-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #3498db;
+  letter-spacing: 0.2px;
+}
+
+.ship-card.optimal-emissions .emissions-value {
+  color: #4CAF50;
+}
+
+.ship-card-footer {
+  padding: 20px;
+  border-top: 1px solid #f0f0f0;
+  background-color: #fafafa;
+  text-align: center;
+}
+
+.ship-select-btn {
+  width: 100%;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.ship-select-btn:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ship-select-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3), 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ship-select-btn.eco-friendly {
+  background-color: #4CAF50;
+  background-image: linear-gradient(to right, #4CAF50, #43a047);
+}
+
+.ship-select-btn.eco-friendly:hover {
+  background-color: #388E3C;
+  background-image: linear-gradient(to right, #43a047, #388E3C);
+}
+
+.ship-select-btn.eco-friendly:focus {
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3), 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.eco-friendly-badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: #4CAF50;
+  color: white;
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 12px;
+  margin-left: 10px;
+  font-weight: 500;
+  vertical-align: middle;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* For mobile responsiveness */
 @media (max-width: 768px) {
+  .ship-cards-container {
+    grid-template-columns: 1fr;
+  }
+  
   .scheduled-ship-input-group {
     flex-direction: column;
   }
-
-  .scheduled-ship-input-wrapper {
-    width: 100%;
-    margin-bottom: 15px;
-  }
-
+  
   .scheduled-ship-swap-btn {
-    align-self: center;
-    margin: 10px 0;
+    margin: 10px auto;
+  }
+  
+  .scheduled-ship-tabs {
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 5px;
+  }
+  
+  .scheduled-ship-tab {
+    padding: 10px 15px;
+    font-size: 14px;
+  }
+  
+  .ship-detail-row {
+    flex-direction: column;
+  }
+  
+  .ship-detail-label {
+    margin-bottom: 4px;
+  }
+  
+  .booking-mode .scheduled-ship-search-btn {
+    width: 100%;
+  }
+  
+  .scheduled-ship-container {
+    padding: 20px 15px;
+  }
+  
+  .scheduled-ship-container h1 {
+    font-size: 28px;
   }
 }
 
@@ -254,4 +460,166 @@
 .vessel-input:focus {
   background-color: #fff;
   box-shadow: 0 0 0 2px rgba(252, 220, 76, 0.2);
+}
+
+/* Add styles for eco-friendly ships and emissions sorting */
+
+.scheduled-ship-sort-btn {
+  padding: 10px 20px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 30px;
+  cursor: pointer;
+  margin-bottom: 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.scheduled-ship-sort-btn:hover {
+  background-color: #e0e0e0;
+}
+
+.scheduled-ship-sort-btn.active {
+  background-color: #4CAF50;
+  color: white;
+  border-color: #43A047;
+}
+
+.scheduled-ship-sorting-options {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+/* Add styles for booking mode with cargo info */
+
+.booking-info-banner {
+  background-color: #e3f2fd;
+  border-radius: 10px;
+  padding: 22px;
+  margin-bottom: 30px;
+  border-left: 4px solid #1976d2;
+  box-shadow: 0 3px 12px rgba(25, 118, 210, 0.1);
+}
+
+.booking-info-banner p {
+  margin: 8px 0;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.booking-info-banner strong {
+  font-weight: 600;
+  color: #1565C0;
+}
+
+.scheduled-ship-select:disabled,
+.scheduled-ship-input:disabled,
+.scheduled-ship-swap-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.booking-mode {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.booking-mode .scheduled-ship-search-btn {
+  width: 320px;
+  height: 50px;
+  font-size: 18px;
+  background: linear-gradient(to right, #ffcb2d, #f9b900);
+  border-radius: 30px;
+  transition: all 0.3s ease;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(249, 185, 0, 0.2);
+}
+
+.booking-mode .scheduled-ship-search-btn:hover {
+  background: linear-gradient(to right, #f9b900, #f0b000);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(249, 185, 0, 0.25);
+}
+
+.booking-mode .scheduled-ship-search-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 203, 45, 0.3), 0 4px 10px rgba(249, 185, 0, 0.2);
+}
+
+.transit-days {
+  font-weight: 700;
+  color: #2980b9;
+  font-size: 16px;
+}
+
+.ship-card.optimal-emissions .transit-days {
+  color: #388E3C;
+}
+
+/* Improved loading state */
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 0.9; }
+  100% { opacity: 0.6; }
+}
+
+.booking-mode .scheduled-ship-search-btn:disabled {
+  background: #aaa;
+  box-shadow: none;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+/* Style for when there are no results yet */
+.scheduled-ship-results-container:empty::after {
+  content: "No results to display yet. Please search for schedules.";
+  display: block;
+  text-align: center;
+  padding: 30px;
+  color: #7f8c8d;
+  font-style: italic;
+}
+
+/* Loading text and dots animation */
+.loading-text {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.loading-dots {
+  display: inline-block;
+  vertical-align: middle;
+  animation: loading-dots 1.5s infinite;
+  width: 24px;
+  text-align: left;
+  margin-left: 2px;
+}
+
+@keyframes loading-dots {
+  0% { content: '.'; }
+  25% { content: '..'; }
+  50% { content: '...'; }
+  75% { content: '..'; }
+  100% { content: '.'; }
+}
+
+/* Improved focus styles for accessibility */
+.scheduled-ship-select:focus,
+.scheduled-ship-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+.scheduled-ship-tab:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.scheduled-ship-swap-btn:focus {
+  outline: none;
+  background-color: #e5e5e5;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }

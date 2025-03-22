@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './BookingForm.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import ShipperForm from './ShipperForm';
+import CargoForm from './CargoForm';
 
 const BookingForm = () => {
   const [formData, setFormData] = useState({
@@ -41,6 +43,10 @@ const BookingForm = () => {
     preferredShippingDate: '',
     preferredCarrier: '',
 
+    // Carbon Emissions
+    co2Emissions: null,
+    isOptimalEmissions: false,
+
     // Insurance
     insuranceRequired: false,
     insuranceValue: '',
@@ -73,51 +79,215 @@ const BookingForm = () => {
       certificateOfOrigin: null
     },
   });
+
+  const [formStep, setFormStep] = useState(1); // 1 for ShipperForm, 2 for CargoForm, 3 for Ship Selection
   const [dateError, setDateError] = useState('');
+  const [ports, setPorts] = useState([]);
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const location = useLocation();
 
   const Base_URL = process.env.REACT_APP_BASE_URL;
 
   // Get today's date in YYYY-MM-DD format
   const today = new Date().toISOString().split('T')[0];
 
+  // Add shipData state if it's passed from the ship schedule
+  const [shipData, setShipData] = useState(location.state?.shipData || null);
+
+  // Make sure cargoDimensions is initialized properly
   useEffect(() => {
-    // Set today's date as the initial value for preferredShippingDate
-    setFormData(prevData => ({
-      ...prevData,
-      preferredShippingDate: today
-    }));
+    // Initialize cargoDimensions if undefined
+    if (!formData.cargoDimensions) {
+      setFormData(prevData => ({
+        ...prevData,
+        cargoDimensions: { length: '', width: '', height: '' }
+      }));
+    }
   }, []);
+
+  useEffect(() => {
+    // If we have state from navigation, populate form fields
+    if (location.state) {
+      const { 
+        scheduleId, 
+        originPort, 
+        destinationPort, 
+        preferredShippingDate, 
+        preferredCarrier, 
+        voyageNumber,
+        co2Emissions,
+        isOptimalEmissions
+      } = location.state;
+      
+      setFormData(prevData => ({
+        ...prevData,
+        originPort: originPort || '',
+        destinationPort: destinationPort || '',
+        preferredShippingDate: preferredShippingDate ? new Date(preferredShippingDate).toISOString().split('T')[0] : today,
+        preferredCarrier: preferredCarrier || '',
+        scheduleId: scheduleId || '',
+        voyageNumber: voyageNumber || '',
+        co2Emissions: co2Emissions || null,
+        isOptimalEmissions: isOptimalEmissions || false
+      }));
+    } else {
+      // Otherwise, just set today's date
+      setFormData(prevData => ({
+        ...prevData,
+        preferredShippingDate: today
+      }));
+    }
+
+    // Fetch ports
+    fetchPorts();
+  }, []);
+
+  const fetchPorts = async () => {
+    try {
+      const response = await axios.get(`${Base_URL}/api/port`);
+      // Clean all port names before setting them
+      const cleanedPorts = (response.data.ports || []).map(port => {
+        // Check for duplicate country pattern and clean it
+        const duplicatePattern = /^(.+?)\(([^)]+)\)(?:\([^)]+\))+$/;
+        if (duplicatePattern.test(port)) {
+          const matches = port.match(/^(.+?)\(([^)]+)\)/);
+          if (matches) {
+            return `${matches[1].trim()}(${matches[2]})`;
+          }
+        }
+        return port;
+      });
+      setPorts(cleanedPorts);
+    } catch (error) {
+      console.error('Error fetching ports:', error);
+    }
+  };
+
+  // Helper function to clean port names by removing duplicate country information
+  const cleanPortName = (portName) => {
+    if (!portName) return '';
+    
+    // More comprehensive regex that handles any number of repeated country patterns
+    // Matches: Mumbai(India)(India), Shanghai(China)(China)(China), etc.
+    const duplicatePattern = /^(.+?)\(([^)]+)\)(?:\([^)]+\))+$/;
+    if (duplicatePattern.test(portName)) {
+      const matches = portName.match(/^(.+?)\(([^)]+)\)/);
+      if (matches) {
+        return `${matches[1].trim()}(${matches[2]})`;
+      }
+    }
+    
+    return portName;
+  };
+
+  // Helper function to extract port name without country
+  const getPortNameOnly = (portWithCountry) => {
+    // If port contains parentheses, extract just the port name
+    const match = portWithCountry.match(/^(.+?)\([^)]+\)$/);
+    return match ? match[1].trim() : portWithCountry.trim();
+  };
+
+  // Helper function to get port with country information
+  const getFullPortName = (portName) => {
+    if (!portName || !ports.length) return portName;
+    
+    // First check if it already has country info
+    if (portName.includes('(') && portName.includes(')')) {
+      return cleanPortName(portName);
+    }
+    
+    // Try to find the full port name with country
+    const portNameLower = portName.toLowerCase().trim();
+    const matchedPort = ports.find(port => {
+      // Get the port name without country
+      const listPortName = getPortNameOnly(port).toLowerCase();
+      return listPortName === portNameLower;
+    });
+    
+    return matchedPort ? cleanPortName(matchedPort) : portName;
+  };
 
   const validateField = (name, value) => {
     let error = '';
     
     switch(name) {
+      case 'shipperName':
+      case 'receiverName':
+        if (!value) error = 'Name is required';
+        break;
+      case 'shipperPhone':
+      case 'receiverPhone':
+        if (!value) error = 'Phone number is required';
+        else if (!/^\d{10}$/.test(value)) error = 'Please enter a valid 10-digit phone number';
+        break;
+      case 'shipperEmail':
+      case 'receiverEmail':
+        if (!value) error = 'Email is required';
+        else if (!/\S+@\S+\.\S+/.test(value)) error = 'Please enter a valid email address';
+        break;
+      case 'shipperAddress':
+      case 'receiverAddress':
+        if (!value) error = 'Address is required';
+        break;
       case 'containerType':
         if (!value) error = 'Container type is required';
         break;
       case 'containerSize':
         if (!value) error = 'Container size is required';
         break;
-      case 'cargoWeight':
-        const maxWeights = {
-          '20ft': 28200, // kg
-          '40ft': 26280, // kg
-          '40ft-hc': 26460, // kg
-        };
-        if (!value) {
-          error = 'Weight is required';
-        } else if (value <= 0) {
-          error = 'Weight must be greater than 0';
-        } else if (formData.containerSize && value > maxWeights[formData.containerSize]) {
-          error = `Maximum weight for ${formData.containerSize} container is ${maxWeights[formData.containerSize]}kg`;
-        }
-        break;
       case 'cargoType':
         if (!value) error = 'Cargo type is required';
         break;
+      case 'cargoWeight':
+        if (!value) error = 'Cargo weight is required';
+        else if (isNaN(value) || Number(value) <= 0) error = 'Please enter a valid weight';
+        break;
+      case 'cargoQuantity':
+        if (!value) error = 'Cargo quantity is required';
+        else if (isNaN(value) || Number(value) <= 0) error = 'Please enter a valid quantity';
+        break;
+      case 'cargoValue':
+        if (!value) error = 'Cargo value is required';
+        else if (isNaN(value) || Number(value) <= 0) error = 'Please enter a valid value';
+        break;
+      case 'serviceType':
+        if (!value) error = 'Service type is required';
+        break;
+      case 'shippingClass':
+        if (!value) error = 'Shipping class is required';
+        break;
+      case 'originPort':
+        if (!value) error = 'Origin port is required';
+        break;
+      case 'destinationPort':
+        if (!value) error = 'Destination port is required';
+        break;
+      case 'preferredShippingDate':
+        if (!value) error = 'Shipping date is required';
+        else error = validateDate(value);
+        break;
+      case 'paymentMethod':
+        if (!value) error = 'Payment method is required';
+        break;
+      case 'trackingPreference':
+        if (!value) error = 'Tracking preference is required';
+        break;
+      case 'cargoDimensions.length':
+      case 'cargoDimensions.width':
+      case 'cargoDimensions.height':
+        if (!value) error = 'This dimension is required';
+        else if (isNaN(value) || Number(value) <= 0) error = 'Please enter a valid measurement';
+        break;
+      case 'insuranceValue':
+        if (formData.insuranceRequired && !value) {
+          error = 'Insurance value is required when insurance is selected';
+        } else if (formData.insuranceRequired && (isNaN(value) || Number(value) <= 0)) {
+          error = 'Please enter a valid insurance value';
+        }
+        break;
       default:
-        if (!value && name !== 'additionalServices') {
+        if (!value && !['additionalServices', 'isFragile', 'requiresRefrigeration', 'isHazardous', 'insuranceRequired'].includes(name)) {
           error = 'This field is required';
         }
     }
@@ -138,492 +308,513 @@ const BookingForm = () => {
     const { name, value, type, checked } = e.target;
     if (type === 'checkbox') {
       if (name === 'additionalServices') {
-        const updatedServices = checked
-          ? [...formData.additionalServices, value]
-          : formData.additionalServices.filter(service => service !== value);
-        setFormData({ ...formData, additionalServices: updatedServices });
+        // Special handling for the additionalServices array
+        const additionalServices = [...formData.additionalServices];
+        if (checked) {
+          additionalServices.push(value);
+        } else {
+          const index = additionalServices.indexOf(value);
+          if (index > -1) {
+            additionalServices.splice(index, 1);
+          }
+        }
+        setFormData(prevData => ({
+          ...prevData,
+          additionalServices
+        }));
       } else {
-        setFormData({ ...formData, [name]: checked });
+        // Handle all other checkboxes
+        setFormData(prevData => ({
+          ...prevData,
+          [name]: checked
+        }));
       }
     } else if (name.startsWith('cargoDimensions.')) {
+      // Handle nested cargoDimensions object
       const dimension = name.split('.')[1];
-      setFormData({
-        ...formData,
-        cargoDimensions: { ...formData.cargoDimensions, [dimension]: value }
-      });
-    } else if (type === 'date') {
-      const error = validateDate(value);
-      setDateError(error);
-      setFormData({ ...formData, [name]: value });
+      setFormData(prevData => ({
+        ...prevData,
+        cargoDimensions: {
+          ...prevData.cargoDimensions,
+          [dimension]: value
+        }
+      }));
     } else {
-      setFormData({ ...formData, [name]: value });
+      // Handle all other inputs
+      setFormData(prevData => ({
+        ...prevData,
+        [name]: value
+      }));
     }
+
+    // Validate field
+    const newErrors = { ...errors };
+    newErrors[name] = validateField(name, type === 'checkbox' ? checked : value);
+    setErrors(newErrors);
   };
 
   const handleFileUpload = (e) => {
     const { name, files } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      documents: {
-        ...prevState.documents,
-        [name]: files[0]
-      }
-    }));
-  };
-
-  const generateBill = (bookingDetails, paymentDetails) => {
-    const doc = new jsPDF();
-    
-    // Add company logo/header
-    doc.setFontSize(20);
-    doc.text('OCEANORACLE SHIPPING', 105, 15, { align: 'center' });
-    
-    // Add invoice details
-    doc.setFontSize(12);
-    doc.text(`Invoice Date: ${new Date().toLocaleDateString()}`, 15, 30);
-    doc.text(`Booking ID: ${bookingDetails._id}`, 15, 37);
-    doc.text(`Payment ID: ${paymentDetails.paymentId}`, 15, 44);
-
-    // Add shipper details
-    doc.setFontSize(14);
-    doc.text('Shipper Details:', 15, 55);
-    doc.setFontSize(12);
-    doc.text(`Name: ${bookingDetails.shipperName}`, 20, 62);
-    doc.text(`Email: ${bookingDetails.shipperEmail}`, 20, 69);
-    doc.text(`Phone: ${bookingDetails.shipperPhone}`, 20, 76);
-
-    // Add cargo details
-    doc.setFontSize(14);
-    doc.text('Cargo Details:', 15, 90);
-    
-    // Create table for cargo details
-    const cargoData = [
-      ['Type', 'Weight', 'Quantity', 'Value'],
-      [
-        bookingDetails.cargoType,
-        `${bookingDetails.cargoWeight} kg`,
-        bookingDetails.cargoQuantity,
-        `₹${bookingDetails.cargoValue}`
-      ]
-    ];
-
-    doc.autoTable({
-      startY: 95,
-      head: [cargoData[0]],
-      body: [cargoData[1]],
-    });
-
-    // Add payment details
-    doc.setFontSize(14);
-    doc.text('Payment Details:', 15, 140);
-    doc.setFontSize(12);
-    doc.text(`Amount Paid: ₹${paymentDetails.amount / 100}`, 20, 147);
-    doc.text(`Payment Method: ${bookingDetails.paymentMethod}`, 20, 154);
-    doc.text(`Payment Status: Successful`, 20, 161);
-
-    // Add footer
-    doc.setFontSize(10);
-    doc.text('Thank you for choosing OCEANORACLE SHIPPING!', 105, 280, { align: 'center' });
-
-    // Save the PDF
-    doc.save(`OCEANORACLE_Invoice_${bookingDetails._id}.pdf`);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    // Validate fields before submitting
-    const formErrors = {};
-    Object.keys(formData).forEach((key) => {
-      const error = validateField(key, formData[key]);
-      if (error) formErrors[key] = error;
-    });
-
-    // Only proceed if no validation errors exist
-    if (Object.keys(formErrors).length === 0 && !dateError) {
-      try {
-        // Create FormData object to handle file uploads
-        const submitData = new FormData();
-        
-        // Add all non-file data
-        Object.keys(formData).forEach(key => {
-          if (key !== 'documents') {
-            if (typeof formData[key] === 'object') {
-              submitData.append(key, JSON.stringify(formData[key]));
-            } else {
-              submitData.append(key, formData[key]);
-            }
-          }
-        });
-
-        // Add document files
-        Object.keys(formData.documents).forEach(docKey => {
-          if (formData.documents[docKey]) {
-            submitData.append(docKey, formData.documents[docKey]);
-          }
-        });
-
-        // First create the booking
-        const bookingResponse = await axios.post(
-          `${Base_URL}/api/booking/bookings`,
-          submitData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        );
-        console.log('Booking Successful:', bookingResponse.data);
-
-        // Then create Razorpay order
-        const orderResponse = await axios.post(
-          `${Base_URL}/api/payment/create-order`,
-          {
-            amount: 10000 * 100, 
-            bookingId: bookingResponse.data.data._id
-          }
-        );
-
-      
-        const options = {
-          key: process.env.REACT_APP_RAZORPAY_KEY_ID,
-          amount: orderResponse.data.order.amount,
-          currency: "INR",
-          name: "OCEANORACLE PAYMENT GATEWAY",
-          description: "Booking Payment",
-          order_id: orderResponse.data.order.id,
-          handler: async function (response) {
-            try {
-              // Verify payment
-              const verificationResponse = await axios.post(`${Base_URL}/api/payment/verify`, {
-                bookingId: bookingResponse.data.data._id,
-                paymentId: response.razorpay_payment_id,
-                orderId: response.razorpay_order_id,
-                signature: response.razorpay_signature,
-                amount: orderResponse.data.order.amount
-              });
-
-              // Generate and download bill
-              generateBill(bookingResponse.data.data, {
-                paymentId: response.razorpay_payment_id,
-                amount: orderResponse.data.order.amount
-              });
-
-              Swal.fire({
-                title: "Payment successful!",
-                text: "Booking confirmed and invoice has been downloaded",
-                icon: "success"
-              });
-              
-              navigate('/dashboard');
-            } catch (error) {
-              console.error('Payment verification failed:', error);
-              alert('Payment verification failed. Please contact support.');
-            }
-          },
-          prefill: {
-            name: formData.shipperName,
-            email: formData.shipperEmail,
-            contact: formData.shipperPhone
-          },
-          theme: {
-            color: "#3399cc"
-          }
-        };
-
-        const razorpay = new window.Razorpay(options);
-        razorpay.open();
-
-      } catch (error) {
-        console.error('Error:', error);
-        let errorMessage = 'An error occurred. Please try again.';
-        
-        if (error.response) {
-          console.error('Error data:', error.response.data);
-          errorMessage = error.response.data.message || errorMessage;
+    if (files.length > 0) {
+      // Update documents object
+      setFormData(prevData => ({
+        ...prevData,
+        documents: {
+          ...prevData.documents,
+          [name]: files[0]
         }
-        
-        alert(errorMessage);
-      }
-    } else {
-      console.error('Form validation errors:', formErrors);
-      alert('Please fill in all required fields correctly.');
+      }));
     }
   };
 
-  return (
-    <form className="booking-form" onSubmit={handleSubmit}>
-      <h2>Ship Booking Form</h2>
+  const validateForm = (step) => {
+    const newErrors = {};
+    let isValid = true;
+
+    if (step === 1) {
+      // Validate shipper info
+      ['shipperName', 'shipperPhone', 'shipperEmail', 'shipperAddress',
+       'receiverName', 'receiverPhone', 'receiverEmail', 'receiverAddress'].forEach(field => {
+        const error = validateField(field, formData[field]);
+        if (error) {
+          newErrors[field] = error;
+          isValid = false;
+        }
+      });
+    } else if (step === 2) {
+      // Validate cargo info and shipping details
+      ['containerType', 'containerSize', 'cargoType', 'cargoWeight',
+       'cargoQuantity', 'cargoValue', 'serviceType', 'shippingClass',
+       'originPort', 'destinationPort', 'preferredShippingDate',
+       'paymentMethod', 'trackingPreference'].forEach(field => {
+        const error = validateField(field, formData[field]);
+        if (error) {
+          newErrors[field] = error;
+          isValid = false;
+        }
+      });
+
+      // Validate cargo dimensions
+      ['cargoDimensions.length', 'cargoDimensions.width', 'cargoDimensions.height'].forEach(field => {
+        const dimension = field.split('.')[1];
+        const error = validateField(field, formData.cargoDimensions[dimension]);
+        if (error) {
+          newErrors[field] = error;
+          isValid = false;
+        }
+      });
+
+      // Validate insurance value if insurance is required
+      if (formData.insuranceRequired) {
+        const error = validateField('insuranceValue', formData.insuranceValue);
+        if (error) {
+          newErrors.insuranceValue = error;
+          isValid = false;
+        }
+      }
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const handleNextStep = () => {
+    if (validateForm(formStep)) {
+      if (formStep === 2) {
+        // Navigate to ship selection with cargo data
+        navigateToShipSelection();
+      } else {
+        setFormStep(formStep + 1);
+      }
+    }
+  };
+
+  const handlePrevStep = () => {
+    setFormStep(formStep - 1);
+  };
+
+  const navigateToShipSelection = () => {
+    // Navigate to ship schedules with cargo data for CO2 calculations
+    navigate('/shipschedules', { 
+      state: {
+        fromBooking: true,
+        cargoWeight: parseFloat(formData.cargoWeight) || 0,
+        cargoQuantity: parseInt(formData.cargoQuantity) || 1,
+        cargoType: formData.cargoType,
+        originPort: formData.originPort,
+        destinationPort: formData.destinationPort,
+        preferredShippingDate: formData.preferredShippingDate,
+        isHazardous: formData.isHazardous,
+        requiresRefrigeration: formData.requiresRefrigeration,
+        bookingFormData: formData // Pass the entire form data for later use
+      }
+    });
+  };
+
+  // Process to initiate payment before creating booking
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm(2)) {
+      return;
+    }
+    
+    try {
+      // Calculate payment amount - using cargo value or a default amount based on weight
+      const amount = (parseFloat(formData.cargoValue) * 100) || (parseFloat(formData.cargoWeight) * 50 * 100) || 5000 * 100; // in paise
       
-      <div className="form-section">
-        <h3>Shipper Information</h3>
-        <input type="text" name="shipperName" value={formData.shipperName} onChange={handleChange} placeholder="Shipper Name" required />
-        <input type="tel" name="shipperPhone" value={formData.shipperPhone} onChange={handleChange} placeholder="Shipper Phone" required />
-        <input type="email" name="shipperEmail" value={formData.shipperEmail} onChange={handleChange} placeholder="Shipper Email" required />
-        <textarea name="shipperAddress" value={formData.shipperAddress} onChange={handleChange} placeholder="Shipper Address" required />
+      // Create Razorpay order
+      const orderResponse = await axios.post(`${Base_URL}/api/payment/create-order`, {
+        amount: amount,
+        bookingId: 'TEMP-' + new Date().getTime() // Temporary ID for the order
+      });
+      
+      if (!orderResponse.data.success) {
+        throw new Error('Failed to create payment order');
+      }
+      
+      // Get the order details
+      const { id: orderId, amount_due: amountDue } = orderResponse.data.order;
+      
+      // Open Razorpay payment form
+      const options = {
+        key: process.env.REACT_APP_RAZORPAY_KEY_ID,
+        amount: amountDue,
+        currency: "INR",
+        name: "Oracle Shipping",
+        description: "Booking Payment",
+        order_id: orderId,
+        handler: function (response) {
+          // This function runs after successful payment
+          const paymentData = {
+            paymentId: response.razorpay_payment_id,
+            orderId: response.razorpay_order_id,
+            signature: response.razorpay_signature,
+            amount: amountDue / 100, // Convert back to rupees
+          };
+          
+          // Call function to create booking with payment verification
+          finalizeBookingWithPayment(paymentData);
+        },
+        prefill: {
+          name: formData.shipperName || "",
+          email: formData.shipperEmail || "",
+          contact: formData.shipperPhone || ""
+        },
+        notes: {
+          shipping_route: `${formData.originPort} to ${formData.destinationPort}`,
+          cargo_type: formData.cargoType,
+          cargo_weight: formData.cargoWeight + " kg"
+        },
+        theme: {
+          color: "#0f375f"
+        },
+        modal: {
+          ondismiss: function() {
+            Swal.fire({
+              title: 'Payment Cancelled',
+              text: 'Your booking was not completed because the payment was cancelled.',
+              icon: 'warning',
+              confirmButtonText: 'OK'
+            });
+          }
+        }
+      };
+      
+      // Open Razorpay payment window
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+      
+    } catch (error) {
+      console.error('Error initiating payment:', error);
+      // Show error message
+      Swal.fire({
+        title: 'Payment Error',
+        text: error.response?.data?.message || 'Failed to initiate payment. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+    }
+  };
+
+  // Finalize booking after successful payment
+  const finalizeBookingWithPayment = async (paymentData) => {
+    try {
+      // Create form data for submission
+      const bookingFormData = new FormData();
+      
+      // Add default values for required fields that were removed from UI
+      const formDataWithDefaults = {
+        ...formData,
+        serviceType: formData.serviceType || 'port-to-port',
+        shippingClass: formData.shippingClass || 'standard',
+        paymentMethod: 'razorpay', // Set payment method to Razorpay
+        trackingPreference: formData.trackingPreference || 'email'
+      };
+      
+      // Add all form fields
+      for (const key in formDataWithDefaults) {
+        if (key !== 'documents' && key !== 'cargoDimensions') {
+          bookingFormData.append(key, formDataWithDefaults[key]);
+        }
+      }
+      
+      // Add cargo dimensions
+      for (const dim in formData.cargoDimensions) {
+        bookingFormData.append(`cargoDimensions.${dim}`, formData.cargoDimensions[dim]);
+      }
+      
+      // Add document files
+      for (const docType in formData.documents) {
+        if (formData.documents[docType]) {
+          bookingFormData.append(`documents.${docType}`, formData.documents[docType]);
+        }
+      }
+      
+      // Submit the booking
+      const bookingResponse = await axios.post(`${Base_URL}/api/booking/bookings`, bookingFormData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      if (!bookingResponse.data.success) {
+        throw new Error(bookingResponse.data.message || 'Error creating booking');
+      }
+      
+      const bookingId = bookingResponse.data.data._id;
+      
+      // Verify payment and link it to the booking
+      const verifyResponse = await axios.post(`${Base_URL}/api/payment/verify`, {
+        bookingId,
+        paymentId: paymentData.paymentId,
+        orderId: paymentData.orderId,
+        signature: paymentData.signature,
+        amount: paymentData.amount
+      });
+      
+      if (!verifyResponse.data.success) {
+        throw new Error('Payment verification failed');
+      }
+      
+      // Show success message
+      Swal.fire({
+        title: 'Booking Created!',
+        text: 'Payment successful and your booking has been created.',
+        icon: 'success',
+        confirmButtonText: 'Download Booking Details',
+        showCancelButton: true,
+        cancelButtonText: 'Close'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Generate PDF
+          generatePDF(bookingResponse.data.data);
+        }
+        // Navigate back to dashboard
+        navigate('/dashboard');
+      });
+    } catch (error) {
+      console.error('Error finalizing booking:', error);
+      Swal.fire({
+        title: 'Error',
+        text: error.response?.data?.message || 'Failed to create booking. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+    }
+  };
+
+  const generatePDF = (bookingData) => {
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(20);
+    doc.text('Booking Confirmation', 105, 15, { align: 'center' });
+    
+    // Add booking reference
+    doc.setFontSize(12);
+    doc.text(`Booking Reference: ${bookingData._id}`, 20, 30);
+    
+    // Add date
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 40);
+    
+    // Add shipper and receiver info
+    doc.text('Shipper Information:', 20, 55);
+    doc.text(`Name: ${bookingData.shipperName}`, 30, 65);
+    doc.text(`Email: ${bookingData.shipperEmail}`, 30, 75);
+    doc.text(`Phone: ${bookingData.shipperPhone}`, 30, 85);
+    
+    doc.text('Receiver Information:', 20, 100);
+    doc.text(`Name: ${bookingData.receiverName}`, 30, 110);
+    doc.text(`Email: ${bookingData.receiverEmail}`, 30, 120);
+    doc.text(`Phone: ${bookingData.receiverPhone}`, 30, 130);
+    
+    // Add cargo details
+    doc.text('Cargo Details:', 20, 145);
+    doc.text(`Type: ${bookingData.cargoType}`, 30, 155);
+    doc.text(`Weight: ${bookingData.cargoWeight} kg`, 30, 165);
+    doc.text(`Quantity: ${bookingData.cargoQuantity}`, 30, 175);
+    
+    // Add shipping details
+    doc.text('Shipping Details:', 20, 190);
+    doc.text(`Origin: ${bookingData.originPort}`, 30, 200);
+    doc.text(`Destination: ${bookingData.destinationPort}`, 30, 210);
+    doc.text(`Shipping Date: ${new Date(bookingData.preferredShippingDate).toLocaleDateString()}`, 30, 220);
+    
+    // Add CO2 emissions information if available
+    if (bookingData.carbonEmissions && bookingData.carbonEmissions.estimatedTotalEmissions) {
+      doc.text('Carbon Emissions:', 20, 235);
+      doc.text(`Estimated CO2: ${bookingData.carbonEmissions.estimatedTotalEmissions.toFixed(2)} kg`, 30, 245);
+      if (bookingData.carbonEmissions.optimizedRoute) {
+        doc.text('Optimized eco-friendly route selected', 30, 255);
+      }
+    }
+    
+    // Save the PDF
+    doc.save(`booking-confirmation-${bookingData._id}.pdf`);
+  };
+
+  // Add a component to display CO2 emissions information
+  const EmissionsInfo = () => {
+    if (!formData.co2Emissions) return null;
+    
+    return (
+      <div className="emissions-info-container">
+        <h3>Carbon Emissions Information</h3>
+        <div className={`emissions-data ${formData.isOptimalEmissions ? 'optimal' : ''}`}>
+          <p>
+            <strong>Estimated CO2 Emissions:</strong> {formData.co2Emissions.toFixed(2)} kg
+            {formData.isOptimalEmissions && (
+              <span className="eco-badge">🌿 Most Eco-Friendly Option</span>
+            )}
+          </p>
+          <p className="emissions-context">
+            {formData.isOptimalEmissions 
+              ? 'You have selected the most eco-friendly shipping option available for this route!' 
+              : 'Consider checking ship schedules for more eco-friendly options.'}
+          </p>
+        </div>
+      </div>
+    );
+  };
+
+  // Add this function to handle going to ship selection
+  const handleFindShips = () => {
+    // First validate required cargo fields
+    if (!formData.cargoWeight || !formData.cargoType || !formData.originPort || !formData.destinationPort || !formData.preferredShippingDate) {
+      setErrors({ 
+        ...errors, 
+        generalError: "Please fill in all required cargo and port information before finding ships",
+        cargoWeight: !formData.cargoWeight ? "Cargo weight is required" : "",
+        cargoType: !formData.cargoType ? "Cargo type is required" : "",
+        originPort: !formData.originPort ? "Origin port is required" : "",
+        destinationPort: !formData.destinationPort ? "Destination port is required" : "",
+        preferredShippingDate: !formData.preferredShippingDate ? "Shipping date is required" : ""
+      });
+      return;
+    }
+
+    // Navigate to ship schedules with cargo data
+    navigate("/shipschedules", {
+      state: {
+        fromBooking: true,
+        cargoWeight: parseFloat(formData.cargoWeight) || 0,
+        cargoQuantity: parseInt(formData.cargoQuantity) || 1,
+        cargoType: formData.cargoType,
+        originPort: formData.originPort,
+        destinationPort: formData.destinationPort,
+        preferredShippingDate: formData.preferredShippingDate,
+        isHazardous: formData.isHazardous,
+        requiresRefrigeration: formData.requiresRefrigeration,
+        bookingFormData: formData // Pass the entire form data for later use
+      }
+    });
+  };
+
+  return (
+    <div className="booking-form-container">
+      <div className="booking-form-header">
+        <h1>eBooking Form</h1>
+        <div className="form-step-indicator">
+          <div className="step-indicator">
+            <div className={`step ${formStep >= 1 ? 'active' : ''} ${formStep > 1 ? 'completed' : ''}`}>1</div>
+            <div className={`step-connector ${formStep > 1 ? 'active' : ''}`}></div>
+            <div className={`step ${formStep >= 2 ? 'active' : ''}`}>2</div>
+          </div>
+          <div className="step-labels">
+            <span className="step-label" style={{left: 'calc(25% - 30px)'}}>Shipper & Receiver</span>
+            <span className="step-label" style={{left: 'calc(75% - 30px)'}}>Cargo & Shipping</span>
+          </div>
+        </div>
       </div>
 
-      <div className="form-section">
-        <h3>Receiver Information</h3>
-        <input type="text" name="receiverName" value={formData.receiverName} onChange={handleChange} placeholder="Receiver Name" required />
-        <input type="tel" name="receiverPhone" value={formData.receiverPhone} onChange={handleChange} placeholder="Receiver Phone" required />
-        <input type="email" name="receiverEmail" value={formData.receiverEmail} onChange={handleChange} placeholder="Receiver Email" required />
-        <textarea name="receiverAddress" value={formData.receiverAddress} onChange={handleChange} placeholder="Receiver Address" required />
-      </div>
+      {/* Display error message if there's an issue with the form data */}
+      {errors?.generalError && (
+        <div className="error-banner">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          {errors.generalError}
+        </div>
+      )}
 
-      <div className="form-section">
-        <h3>Container Details</h3>
-        <select 
-          name="containerType" 
-          value={formData.containerType} 
-          onChange={handleChange} 
-          required
-        >
-          <option value="">Select Container Type</option>
-          <option value="dry">Dry Container</option>
-          <option value="reefer">Reefer Container</option>
-          <option value="open-top">Open Top Container</option>
-          <option value="flat-rack">Flat Rack Container</option>
-          <option value="tank">Tank Container</option>
-        </select>
+      {/* Conditional rendering with safety checks */}
+      {formStep === 1 && (
+        <ShipperForm
+          formData={formData || {}}
+          handleChange={handleChange}
+          handleNextStep={handleNextStep}
+          errors={errors || {}}
+        />
+      )}
 
-        <select 
-          name="containerSize" 
-          value={formData.containerSize} 
-          onChange={handleChange} 
-          required
-        >
-          <option value="">Select Container Size</option>
-          <option value="20ft">20ft Standard</option>
-          <option value="40ft">40ft Standard</option>
-          <option value="40ft-hc">40ft High Cube</option>
-        </select>
-
-        <select 
-          name="cargoType" 
-          value={formData.cargoType} 
-          onChange={handleChange} 
-          required
-        >
-          <option value="">Select Cargo Type</option>
-          <option value="general">General Cargo</option>
-          <option value="perishable">Perishable Goods</option>
-          <option value="dangerous">Dangerous Goods</option>
-          <option value="valuable">Valuable Cargo</option>
-        </select>
-
-        <input type="number" name="cargoWeight" value={formData.cargoWeight} onChange={handleChange} placeholder="Cargo Weight (kg)" required />
-        <input type="number" name="cargoDimensions.length" value={formData.cargoDimensions.length} onChange={handleChange} placeholder="Length (cm)" required />
-        <input type="number" name="cargoDimensions.width" value={formData.cargoDimensions.width} onChange={handleChange} placeholder="Width (cm)" required />
-        <input type="number" name="cargoDimensions.height" value={formData.cargoDimensions.height} onChange={handleChange} placeholder="Height (cm)" required />
-        <input type="number" name="cargoQuantity" value={formData.cargoQuantity} onChange={handleChange} placeholder="Quantity" required />
-        <input type="number" name="cargoValue" value={formData.cargoValue} onChange={handleChange} placeholder="Cargo Value" required />
-      </div>
-
-      <div className="form-section">
-        <h3>Shipment Type</h3>
-        <select name="serviceType" value={formData.serviceType} onChange={handleChange} required>
-          <option value="">Select Service Type</option>
-          <option value="door-to-door">Door to Door</option>
-          <option value="port-to-port">Port to Port</option>
-          <option value="door-to-port">Door to Port</option>
-        </select>
-        <select name="shippingClass" value={formData.shippingClass} onChange={handleChange} required>
-          <option value="">Select Shipping Class</option>
-          <option value="standard">Standard</option>
-          <option value="express">Express</option>
-        </select>
-      </div>
-
-      <div className="form-section">
-        <h3>Origin and Destination</h3>
-        <input type="text" id="originPort" name="originPort" value={formData.originPort} onChange={handleChange} placeholder="Origin Port" required />
-        <input type="text" id="destinationPort" name="destinationPort" value={formData.destinationPort} onChange={handleChange} placeholder="Destination Port" required />
-      </div>
-
-      <div className="form-section">
-        <h3>Schedule and Route</h3>
-        <div className="date-input-wrapper">
-          <input 
-            type="date" 
-            name="preferredShippingDate" 
-            value={formData.preferredShippingDate} 
-            onChange={handleChange} 
-            min={today}
-            required 
+      {formStep === 2 && formData && (
+        <>
+          <CargoForm
+            formData={formData}
+            handleChange={handleChange}
+            handleFileUpload={handleFileUpload}
+            validateField={validateField}
+            handlePrevStep={handlePrevStep}
+            handleSubmit={handleFindShips}
+            submitButtonText="Find Optimal Ships"
+            errors={errors || {}}
+            ports={ports || []}
+            dateError={dateError || ''}
+            today={today}
           />
-          <label>Preferred Shipping Date</label>
-          {dateError && <span className="error-message">{dateError}</span>}
-        </div>
-        <input type="text" id="preferredCarrier" name="preferredCarrier" value={formData.preferredCarrier} onChange={handleChange} placeholder="Preferred Carrier (optional)" />
-      </div>
+          {formData.co2Emissions && <EmissionsInfo />}
+        </>
+      )}
 
-      <div className="form-section">
-        <h3>Insurance</h3>
-        <label>
-          <input type="checkbox" id="insuranceRequired" name="insuranceRequired" checked={formData.insuranceRequired} onChange={handleChange} />
-          Insurance Required
-        </label>
-        {formData.insuranceRequired && (
-          <input type="number" id="insuranceValue" name="insuranceValue" value={formData.insuranceValue} onChange={handleChange} placeholder="Insurance Value" required />
-        )}
-      </div>
+      {/* Find Ships Button */}
+      {formStep === 1 && !shipData && (
+        <button 
+          className="find-ships-button" 
+          onClick={handleFindShips}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <line x1="11" y1="8" x2="11" y2="14"></line>
+            <line x1="8" y1="11" x2="14" y2="11"></line>
+          </svg>
+          Find Available Ships
+        </button>
+      )}
 
-      <div className="form-section">
-        <h3>Special Handling</h3>
-        {formData.cargoType === 'dangerous' && (
-          <div className="dangerous-goods-info">
-            <input 
-              type="text" 
-              name="imdgClass" 
-              value={formData.imdgClass || ''} 
-              onChange={handleChange} 
-              placeholder="IMDG Class" 
-              required 
-            />
-            <input 
-              type="text" 
-              name="unNumber" 
-              value={formData.unNumber || ''} 
-              onChange={handleChange} 
-              placeholder="UN Number" 
-              required 
-            />
-          </div>
-        )}
-        <textarea name="specialInstructions" value={formData.specialInstructions} onChange={handleChange} placeholder="Special Instructions" />
-        <label>
-          <input type="checkbox" name="isFragile" checked={formData.isFragile} onChange={handleChange} />
-          Fragile Cargo
-        </label>
-        <label>
-          <input type="checkbox" name="requiresRefrigeration" checked={formData.requiresRefrigeration} onChange={handleChange} />
-          Requires Refrigeration
-        </label>
-        <label>
-          <input type="checkbox" name="isHazardous" checked={formData.isHazardous} onChange={handleChange} />
-          Hazardous Materials
-        </label>
-      </div>
-
-      <div className="form-section">
-        <h3>Payment Information</h3>
-        <select name="paymentMethod" value={formData.paymentMethod} onChange={handleChange} required>
-          <option value="">Select Payment Method</option>
-          <option value="creditCard">Credit Card</option>
-          <option value="bankTransfer">Bank Transfer</option>
-        </select>
-      </div>
-
-      <div className="form-section">
-        <h3>Tracking and Notifications</h3>
-        <select name="trackingPreference" value={formData.trackingPreference} onChange={handleChange} required>
-          <option value="">Select Tracking Preference</option>
-          <option value="email">Email</option>
-          <option value="sms">SMS</option>
-          <option value="both">Both Email and SMS</option>
-        </select>
-      </div>
-
-      <div className="form-section">
-        <h3>Customs Information</h3>
-        <input type="text" name="hsCode" value={formData.hsCode} onChange={handleChange} placeholder="HS Code" />
-        {/* You might want to add a file upload component here for customs documents */}
-      </div>
-
-      <div className="form-section">
-        <h3>Additional Services</h3>
-        <label>
-          <input type="checkbox" id="customsClearance" name="additionalServices" value="customsClearance" checked={formData.additionalServices.includes('customsClearance')} onChange={handleChange} />
-          Customs Clearance
-        </label>
-        <label>
-          <input type="checkbox" id="packaging" name="additionalServices" value="packaging" checked={formData.additionalServices.includes('packaging')} onChange={handleChange} />
-          Packaging
-        </label>
-        <label>
-          <input type="checkbox" id="warehousing" name="additionalServices" value="warehousing" checked={formData.additionalServices.includes('warehousing')} onChange={handleChange} />
-          Warehousing
-        </label>
-      </div>
-
-      <div className="form-section">
-        <h3>Required Documents</h3>
-        <div className="document-upload-grid">
-          <div className="document-upload-item">
-            <label>Bill of Lading</label>
-            <input
-              type="file"
-              name="billOfLading"
-              onChange={handleFileUpload}
-              accept=".pdf,.doc,.docx"
-              required
-            />
-            {formData.documents.billOfLading && (
-              <span className="file-name">{formData.documents.billOfLading.name}</span>
-            )}
-          </div>
-
-          <div className="document-upload-item">
-            <label>Commercial Invoice</label>
-            <input
-              type="file"
-              name="commercialInvoice"
-              onChange={handleFileUpload}
-              accept=".pdf,.doc,.docx,.xls,.xlsx"
-              required
-            />
-            {formData.documents.commercialInvoice && (
-              <span className="file-name">{formData.documents.commercialInvoice.name}</span>
-            )}
-          </div>
-
-          <div className="document-upload-item">
-            <label>Packing List</label>
-            <input
-              type="file"
-              name="packingList"
-              onChange={handleFileUpload}
-              accept=".pdf,.doc,.docx,.xls,.xlsx"
-              required
-            />
-            {formData.documents.packingList && (
-              <span className="file-name">{formData.documents.packingList.name}</span>
-            )}
-          </div>
-
-          <div className="document-upload-item">
-            <label>Customs Documentation</label>
-            <input
-              type="file"
-              name="customsDocuments"
-              onChange={handleFileUpload}
-              accept=".pdf,.doc,.docx"
-              required
-            />
-            {formData.documents.customsDocuments && (
-              <span className="file-name">{formData.documents.customsDocuments.name}</span>
-            )}
-          </div>
-
-          <div className="document-upload-item">
-            <label>Certificate of Origin</label>
-            <input
-              type="file"
-              name="certificateOfOrigin"
-              onChange={handleFileUpload}
-              accept=".pdf,.doc,.docx"
-              required
-            />
-            {formData.documents.certificateOfOrigin && (
-              <span className="file-name">{formData.documents.certificateOfOrigin.name}</span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <button type="submit" id="submitBtn" className="submit-btn">Submit Booking</button>
-    </form>
+      {/* Submit Button - Only show if ship data is available */}
+      {shipData && (
+        <button 
+          className="next-button" 
+          onClick={handleSubmit}
+        >
+          Submit Booking
+        </button>
+      )}
+    </div>
   );
 };
 
